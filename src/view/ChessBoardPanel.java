@@ -2,6 +2,7 @@ package view;
 
 import components.ChessGridComponent;
 import model.ChessPiece;
+import org.ietf.jgss.GSSManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -164,13 +165,14 @@ public class ChessBoardPanel extends JPanel {
             if(canPut(dx,dy,T,currentPlayer,false)){
                 while(chessGrids[dx][dy].getChessPiece()!=currentPlayer){
                     chessGrids[dx][dy].setChessPiece(currentPlayer);
-                    GameFrame.controller.countScore(currentPlayer);
+                    GameFrame.controller.countScore(currentPlayer,1);
+                    GameFrame.controller.countScore(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK , -1);
                     dx+=xDirection[T];
                     dy+=yDirection[T];
                 }
             }
         }
         chessGrids[row][col].setChessPiece(currentPlayer);
-        GameFrame.controller.countScore(currentPlayer);
+        GameFrame.controller.countScore(currentPlayer,1);
     }
 }

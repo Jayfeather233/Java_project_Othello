@@ -41,11 +41,11 @@ public class GameController {
     }
 
 
-    public void countScore(ChessPiece cur) {
+    public void countScore(ChessPiece cur,int u) {
         if (cur == ChessPiece.BLACK) {
-            blackScore++;
+            blackScore+=u;
         } else {
-            whiteScore++;
+            whiteScore+=u;
         }
     }
 
