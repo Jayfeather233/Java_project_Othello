@@ -17,6 +17,7 @@ public class GameController {
     private ChessPiece currentPlayer;
     private int blackScore;
     private int whiteScore;
+    public int jumpTime=0;
 
     public GameController(ChessBoardPanel gamePanel, StatusPanel statusPanel) {
         this.gamePanel = gamePanel;
@@ -38,6 +39,7 @@ public class GameController {
         currentPlayer = (currentPlayer == ChessPiece.BLACK) ? ChessPiece.WHITE : ChessPiece.BLACK;
         statusPanel.setPlayerText(currentPlayer.name());
         statusPanel.setScoreText(blackScore, whiteScore);
+        checkPlaceable(currentPlayer);
     }
 
 
@@ -92,7 +94,15 @@ public class GameController {
         gamePanel.checkPlaceable(currentPlayer);
     }
 
+    public void jumpThrough(){
+        jumpTime++;
+        swapPlayer();
+        if(jumpTime==2){
+            endGame();
+        }
+    }
+
     public void endGame() {
-        JOptionPane.showMessageDialog(gamePanel,(blackScore!=whiteScore)?((blackScore>whiteScore) ? "BLACK" : "WHITE" + "WINS!") : "DRAW!");
+        JOptionPane.showMessageDialog(gamePanel,(blackScore!=whiteScore)?((blackScore>whiteScore ? "BLACK" : "WHITE") + " WINS!") : "DRAW!");
     }
 }

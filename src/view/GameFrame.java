@@ -6,14 +6,14 @@ import model.ChessPiece;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class GameFrame extends JFrame {
     public static GameController controller;
     private ChessBoardPanel chessBoardPanel;
     private StatusPanel statusPanel;
     public static boolean cheat=false;
+    public static ChessPiece AIPiece=null;
+    public static int AI_Level=1;
 
     public GameFrame(int frameSize) {
 
@@ -31,11 +31,11 @@ public class GameFrame extends JFrame {
 
         JMenu fileMenu=new JMenu("File");
         JMenu gameMenu=new JMenu("Game");
-        JMenu AI=new JMenu("vsAI");
+        JMenu AIMenu=new JMenu("vsAI");
 
         menuBar.add(fileMenu);
         menuBar.add(gameMenu);
-        menuBar.add(AI);
+        menuBar.add(AIMenu);
 
         JMenuItem loadFileMenuItem=new JMenuItem("Load");
         JMenuItem saveFileMenuItem=new JMenuItem("Save");
@@ -72,6 +72,34 @@ public class GameFrame extends JFrame {
             System.out.println("Cheat mode "+ (cheat ? "off" : "on"));
             cheat=!cheat;
         });
+
+        JCheckBoxMenuItem AIMode=new JCheckBoxMenuItem("AI mode");
+        AIMenu.add(AIMode);
+        AIMode.addActionListener(e -> {
+            System.out.println("AI mode "+ (AIPiece==null ? "on" : "off"));
+            if(AIPiece==null){
+                AIPiece=controller.getCurrentPlayer();
+            }else{
+                AIPiece=null;
+            }
+        });
+        AIMenu.addSeparator();
+
+        JRadioButtonMenuItem AILevel1=new JRadioButtonMenuItem("Easy");
+        JRadioButtonMenuItem AILevel2=new JRadioButtonMenuItem("Normal");
+        JRadioButtonMenuItem AILevel3=new JRadioButtonMenuItem("Hard");
+        AIMenu.add(AILevel1);
+        AIMenu.add(AILevel2);
+        AIMenu.add(AILevel3);
+        AILevel1.addActionListener(e -> AI_Level=1);
+        AILevel2.addActionListener(e -> AI_Level=2);
+        AILevel3.addActionListener(e -> AI_Level=4);
+        ButtonGroup AILevel=new ButtonGroup();
+        AILevel.add(AILevel1);
+        AILevel.add(AILevel2);
+        AILevel.add(AILevel3);
+        AILevel1.setSelected(true);
+
 
 
         chessBoardPanel = new ChessBoardPanel((int) (this.getWidth() * 0.8), (int) (this.getHeight() * 0.7));

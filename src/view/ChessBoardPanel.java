@@ -2,18 +2,18 @@ package view;
 
 import components.ChessGridComponent;
 import model.ChessPiece;
-import org.ietf.jgss.GSSManager;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class ChessBoardPanel extends JPanel {
-    private final int CHESS_COUNT = 8;
+    public static final int CHESS_COUNT = 8;
     private ChessGridComponent[][] chessGrids;
+    private int[][] undoList;
+    private int undoLength=0;
     private int[] xDirection;
     private int[] yDirection;
     private int directionCounter;
-    private boolean isEnd;
 
     public ChessBoardPanel(int width, int height) {
         this.setVisible(true);
@@ -22,6 +22,7 @@ public class ChessBoardPanel extends JPanel {
         this.setBackground(Color.BLACK);
         int length = Math.min(width, height);
         this.setSize(length, length);
+        undoList=new int[100][10];
         ChessGridComponent.gridSize = length / CHESS_COUNT;
         ChessGridComponent.chessSize = (int) (ChessGridComponent.gridSize * 0.8);
         System.out.printf("width = %d height = %d gridSize = %d chessSize = %d\n",
@@ -96,9 +97,16 @@ public class ChessBoardPanel extends JPanel {
         return GameFrame.cheat||chessGrids[row][col].getChessPiece()==ChessPiece.GRAY;
         //return true;
     }
+    public void addUndo(int x,int y){
+        undoList[undoLength][0]=x;
+        undoList[undoLength][1]=y;
+        System.out.printf("(%d,%d)(",undoList[undoLength][0],undoList[undoLength][1]);
+        for(int i=0;i<8;i++) System.out.printf("%d,",undoList[undoLength][i+2]);
+        System.out.println(")");
+        ++undoLength;
+    }
 
     public void checkPlaceable(ChessPiece currentPlayer) {
-        boolean isEnd=true;
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY)
@@ -108,15 +116,12 @@ public class ChessBoardPanel extends JPanel {
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if(chessGrids[i][j].getChessPiece()==currentPlayer) {
-                    if(!findPut(i,j,currentPlayer)) isEnd=false;
+                    findPut(i,j,currentPlayer);
                 }
             }
         }
 
         repaint();
-        if(isEnd){
-            GameFrame.controller.endGame();
-        }
     }
 
     private boolean checkBounder(int row ,int col){
@@ -129,13 +134,12 @@ public class ChessBoardPanel extends JPanel {
             if(chessGrids[dx][dy].getChessPiece()==null||chessGrids[dx][dy].getChessPiece()==ChessPiece.GRAY){
                 if(cnt==0){
                     break;
-                }else{
-                    if(ckOnly) {
-                        chessGrids[dx][dy].setChessPiece(ChessPiece.GRAY);
-                        return true;
-                    }
-                    else return false;
                 }
+                if(ckOnly) {
+                    chessGrids[dx][dy].setChessPiece(ChessPiece.GRAY);
+                    return true;
+                }
+                else return false;
             }else if(chessGrids[dx][dy].getChessPiece()==currentPlayer){
                 if(ckOnly) break;
                 else return true;
@@ -148,31 +152,115 @@ public class ChessBoardPanel extends JPanel {
         return false;
     }
 
-    private boolean findPut(int row, int col, ChessPiece currentPlayer) {
-        boolean isEndi=true;
+    private void findPut(int row, int col, ChessPiece currentPlayer) {
         for(int T=0;T<directionCounter;T++){
             int dx=row+xDirection[T];
             int dy=col+yDirection[T];
-            if(canPut(dx,dy,T,currentPlayer,true)) isEndi=false;
+            canPut(dx,dy,T,currentPlayer,true);
         }
-        return isEndi;
     }
 
-    public void doMove(int row, int col, ChessPiece currentPlayer) {
+    public int doMove(int row, int col, ChessPiece currentPlayer) {
+        int t=0;
         for(int T=0;T<directionCounter;T++){
             int dx=row+xDirection[T];
             int dy=col+yDirection[T];
+            undoList[undoLength][T+2]=0;
             if(canPut(dx,dy,T,currentPlayer,false)){
                 while(chessGrids[dx][dy].getChessPiece()!=currentPlayer){
                     chessGrids[dx][dy].setChessPiece(currentPlayer);
-                    GameFrame.controller.countScore(currentPlayer,1);
-                    GameFrame.controller.countScore(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK , -1);
+                    t++;
+                    undoList[undoLength][T+2]++;
                     dx+=xDirection[T];
                     dy+=yDirection[T];
                 }
             }
         }
         chessGrids[row][col].setChessPiece(currentPlayer);
-        GameFrame.controller.countScore(currentPlayer,1);
+        return t+1;
+    }
+
+    public void AIPlay(int level, ChessPiece currentPlayer) {
+        int nowPoints=-2147483647,ni=-1,nj=-1;
+
+        ChessPiece[][] bfc=new ChessPiece[CHESS_COUNT][CHESS_COUNT];
+        eraseGray(currentPlayer);
+        for (int i = 0; i < CHESS_COUNT; i++) {
+            for (int j = 0; j < CHESS_COUNT; j++) {
+                bfc[i][j]=chessGrids[i][j].getChessPiece();
+            }
+        }
+        for (int i = 0; i < CHESS_COUNT; i++) {
+            for (int j = 0; j < CHESS_COUNT; j++) {
+                if(chessGrids[i][j].getChessPiece()==ChessPiece.GRAY) {
+                    int tmp = think(i, j, level, currentPlayer);
+                    for (int i2 = 0; i2 < CHESS_COUNT; i2++) {
+                        for (int j2 = 0; j2 < CHESS_COUNT; j2++) {
+                            chessGrids[i2][j2].setChessPiece(bfc[i2][j2]);
+                        }
+                    }
+                    if (nowPoints<tmp){
+                        nowPoints=tmp;
+                        ni=i;
+                        nj=j;
+                    }
+                }
+            }
+        }
+        if(ni==-1) GameFrame.controller.jumpThrough();
+        else{
+            chessGrids[ni][nj].onMouseClicked();
+        }
+    }
+
+    private void eraseGray(ChessPiece currentPlayer) {
+        for (int i = 0; i < CHESS_COUNT; i++) {
+            for (int j = 0; j < CHESS_COUNT; j++) {
+                if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY)
+                    chessGrids[i][j].setChessPiece(null);
+            }
+        }
+        checkPlaceable(currentPlayer);
+    }
+
+    private int think(int dx, int dy, int level, ChessPiece currentPlayer) {
+        //System.out.printf("Thinking... %d\n",level);
+        if(level<=0) return 0;
+
+        int dif=doMove(dx,dy,currentPlayer);
+        currentPlayer=(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
+        eraseGray(currentPlayer);
+        ChessPiece[][] bfc=new ChessPiece[CHESS_COUNT][CHESS_COUNT];
+        for (int i = 0; i < CHESS_COUNT; i++) {
+            for (int j = 0; j < CHESS_COUNT; j++) {
+                bfc[i][j]=chessGrids[i][j].getChessPiece();
+            }
+        }
+        int s=2147483647;
+        for (int i = 0; i < CHESS_COUNT; i++) {
+            for (int j = 0; j < CHESS_COUNT; j++) {
+                if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY) {
+                    s=Math.min(s,think(i,j,level-1,currentPlayer));
+                    for (int i2 = 0; i2 < CHESS_COUNT; i2++) {
+                        for (int j2 = 0; j2 < CHESS_COUNT; j2++) {
+                            chessGrids[i2][j2].setChessPiece(bfc[i2][j2]);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(s!=2147483647) dif-=s;
+
+        return dif;
+    }
+
+    public boolean checkGray() {
+        for (int i = 0; i < CHESS_COUNT; i++) {
+            for (int j = 0; j < CHESS_COUNT; j++) {
+                if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY) return false;
+            }
+        }
+        return true;
     }
 }
