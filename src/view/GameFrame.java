@@ -79,7 +79,7 @@ public class GameFrame extends JFrame {
         AIMode.addActionListener(e -> {
             System.out.println("AI mode "+ (AIPiece==null ? "on" : "off"));
             if(AIPiece==null){
-                AIPiece=controller.getCurrentPlayer();
+                AIPiece=controller.getCurrentPlayer() == ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK;
             }else{
                 AIPiece=null;
             }
