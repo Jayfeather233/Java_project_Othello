@@ -92,7 +92,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     public boolean canClickGrid(int row, int col, ChessPiece currentPlayer) {
-        return chessGrids[row][col].getChessPiece()==ChessPiece.GRAY;
+        return GameFrame.cheat||chessGrids[row][col].getChessPiece()==ChessPiece.GRAY;
         //return true;
     }
 
