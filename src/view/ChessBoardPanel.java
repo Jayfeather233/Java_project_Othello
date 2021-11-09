@@ -12,6 +12,7 @@ public class ChessBoardPanel extends JPanel {
     private int[] xDirection;
     private int[] yDirection;
     private int directionCounter;
+    private boolean isEnd;
 
     public ChessBoardPanel(int width, int height) {
         this.setVisible(true);
@@ -96,6 +97,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     public void checkPlaceable(ChessPiece currentPlayer) {
+        boolean isEnd=true;
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY)
@@ -105,12 +107,15 @@ public class ChessBoardPanel extends JPanel {
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if(chessGrids[i][j].getChessPiece()==currentPlayer) {
-                    findPut(i,j,currentPlayer);
+                    if(!findPut(i,j,currentPlayer)) isEnd=false;
                 }
             }
         }
 
         repaint();
+        if(isEnd){
+            GameFrame.controller.endGame();
+        }
     }
 
     private boolean checkBounder(int row ,int col){
@@ -124,9 +129,11 @@ public class ChessBoardPanel extends JPanel {
                 if(cnt==0){
                     break;
                 }else{
-                    if(ckOnly) chessGrids[dx][dy].setChessPiece(ChessPiece.GRAY);
+                    if(ckOnly) {
+                        chessGrids[dx][dy].setChessPiece(ChessPiece.GRAY);
+                        return true;
+                    }
                     else return false;
-                    break;
                 }
             }else if(chessGrids[dx][dy].getChessPiece()==currentPlayer){
                 if(ckOnly) break;
@@ -136,17 +143,18 @@ public class ChessBoardPanel extends JPanel {
             }
             dx=dx+xDirection[T];
             dy=dy+yDirection[T];
-            System.out.printf("%d %d\n",dx,dy);
         }
         return false;
     }
 
-    private void findPut(int row, int col, ChessPiece currentPlayer) {
+    private boolean findPut(int row, int col, ChessPiece currentPlayer) {
+        boolean isEndi=true;
         for(int T=0;T<directionCounter;T++){
             int dx=row+xDirection[T];
             int dy=col+yDirection[T];
-            canPut(dx,dy,T,currentPlayer,true);
+            if(canPut(dx,dy,T,currentPlayer,true)) isEndi=false;
         }
+        return isEndi;
     }
 
     public void doMove(int row, int col, ChessPiece currentPlayer) {
@@ -156,11 +164,13 @@ public class ChessBoardPanel extends JPanel {
             if(canPut(dx,dy,T,currentPlayer,false)){
                 while(chessGrids[dx][dy].getChessPiece()!=currentPlayer){
                     chessGrids[dx][dy].setChessPiece(currentPlayer);
+                    GameFrame.controller.countScore(currentPlayer);
                     dx+=xDirection[T];
                     dy+=yDirection[T];
                 }
             }
         }
         chessGrids[row][col].setChessPiece(currentPlayer);
+        GameFrame.controller.countScore(currentPlayer);
     }
 }

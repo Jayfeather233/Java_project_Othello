@@ -35,15 +35,14 @@ public class GameController {
     }
 
     public void swapPlayer() {
-        countScore();
         currentPlayer = (currentPlayer == ChessPiece.BLACK) ? ChessPiece.WHITE : ChessPiece.BLACK;
         statusPanel.setPlayerText(currentPlayer.name());
         statusPanel.setScoreText(blackScore, whiteScore);
     }
 
 
-    public void countScore() {
-        if (currentPlayer == ChessPiece.BLACK) {
+    public void countScore(ChessPiece cur) {
+        if (cur == ChessPiece.BLACK) {
             blackScore++;
         } else {
             whiteScore++;
@@ -91,5 +90,9 @@ public class GameController {
 
     public void checkPlaceable(ChessPiece currentPlayer) {
         gamePanel.checkPlaceable(currentPlayer);
+    }
+
+    public void endGame() {
+        JOptionPane.showMessageDialog(gamePanel,(blackScore!=whiteScore)?((blackScore>whiteScore) ? "BLACK" : "WHITE" + "WINS!") : "DRAW!");
     }
 }
