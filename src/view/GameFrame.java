@@ -89,16 +89,20 @@ public class GameFrame extends JFrame {
         JRadioButtonMenuItem AILevel1=new JRadioButtonMenuItem("Easy");
         JRadioButtonMenuItem AILevel2=new JRadioButtonMenuItem("Normal");
         JRadioButtonMenuItem AILevel3=new JRadioButtonMenuItem("Hard");
+        JRadioButtonMenuItem AILevel4=new JRadioButtonMenuItem("Very Hard (Maybe Slow)");
         AIMenu.add(AILevel1);
         AIMenu.add(AILevel2);
         AIMenu.add(AILevel3);
+        AIMenu.add(AILevel4);
         AILevel1.addActionListener(e -> AI_Level=1);
         AILevel2.addActionListener(e -> AI_Level=2);
         AILevel3.addActionListener(e -> AI_Level=4);
+        AILevel4.addActionListener(e -> AI_Level=6);
         ButtonGroup AILevel=new ButtonGroup();
         AILevel.add(AILevel1);
         AILevel.add(AILevel2);
         AILevel.add(AILevel3);
+        AILevel.add(AILevel4);
         AILevel1.setSelected(true);
         //菜单栏到此结束
 
