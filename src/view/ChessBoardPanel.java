@@ -35,6 +35,9 @@ public class ChessBoardPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * 初始化方向
+     */
     private void initialDirection() {
         xDirection=new int[8];
         yDirection=new int[8];
@@ -47,7 +50,7 @@ public class ChessBoardPanel extends JPanel {
                     ++directionCounter;
                 }
             }
-        }
+        }//记录八个方向的xy偏移量
     }
 
     /**
@@ -93,10 +96,19 @@ public class ChessBoardPanel extends JPanel {
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
     }
 
+    /**
+     * 是否可放一子。是灰色就可以
+     */
     public boolean canClickGrid(int row, int col, ChessPiece currentPlayer) {
         return GameFrame.cheat||chessGrids[row][col].getChessPiece()==ChessPiece.GRAY;
         //return true;
     }
+
+    /**
+     * 加入一个Undo
+     * @param x 坐标x
+     * @param y 坐标y
+     */
     public void addUndo(int x,int y){
         undoList[undoLength][0]=x;
         undoList[undoLength][1]=y;
@@ -106,14 +118,18 @@ public class ChessBoardPanel extends JPanel {
         ++undoLength;
     }
 
+    /**
+     * 用灰色列举出当前玩家能放的位置
+     * @param currentPlayer 当前玩家颜色
+     */
     public void checkPlaceable(ChessPiece currentPlayer) {
-        for (int i = 0; i < CHESS_COUNT; i++) {
+        for (int i = 0; i < CHESS_COUNT; i++) {//首先清除棋盘上灰色，因为我们要重新生成它
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY)
                     chessGrids[i][j].setChessPiece(null);
             }
         }
-        for (int i = 0; i < CHESS_COUNT; i++) {
+        for (int i = 0; i < CHESS_COUNT; i++) {//对每一个有棋子的点从它向8个方向扩展找哪里可放
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if(chessGrids[i][j].getChessPiece()==currentPlayer) {
                     findPut(i,j,currentPlayer);
@@ -121,13 +137,21 @@ public class ChessBoardPanel extends JPanel {
             }
         }
 
-        repaint();
+        repaint();//对棋盘重画，不然gui显示不更新
     }
 
+    /**
+     * 对某个坐标检测是否超出边界
+     */
     private boolean checkBounder(int row ,int col){
         return (0<=row&&row<CHESS_COUNT)&&(0<=col&&col<CHESS_COUNT);
     }
 
+    /**
+     * 在坐标dx,dy的方向T上检测这个地方能不能放  T是之前initialDirection中的
+     * @param ckOnly 如果为真是从一个放了棋的地方反推空地能不能放
+     *               如果为假是从空地推能不能放
+     */
     private boolean canPut(int dx, int dy, int T, ChessPiece currentPlayer, boolean ckOnly) {
         int cnt=0;
         while(checkBounder(dx,dy)){
@@ -152,6 +176,9 @@ public class ChessBoardPanel extends JPanel {
         return false;
     }
 
+    /**
+     * 从checkPlaceable里面分出来的，表示找某个特定点8方向上哪里能放
+     */
     private void findPut(int row, int col, ChessPiece currentPlayer) {
         for(int T=0;T<directionCounter;T++){
             int dx=row+xDirection[T];
@@ -160,6 +187,10 @@ public class ChessBoardPanel extends JPanel {
         }
     }
 
+    /**
+     * 真正下子下去
+     * @return 下这一步共增加几个子
+     */
     public int doMove(int row, int col, ChessPiece currentPlayer) {
         int t=0;
         for(int T=0;T<directionCounter;T++){
@@ -180,11 +211,27 @@ public class ChessBoardPanel extends JPanel {
         return t+1;
     }
 
+    /**
+     * AI调用入口，函数结束会调用某个格子的onMouseClicked来模拟点击
+     * AI思路：遍历所有能下的点，假如我下这里，那么搜索下一个玩家继续移动最优的值，找到这个值的最小，就是我们移动的地方
+     * 值：指自己增加的子数
+     * 最优：指机器认为最优，也就是获得的子最大
+     *
+     * 这个方法的问题在于，因为搜索本身限制，只能搜索4~6步，也就3回合，
+     * 因为子如果到边界或者被围起来，就不会被吃掉，而在开局时搜索不到这一点
+     * 并且它是以增加的子为权重，所以不会将子往边界走
+     * 所以只要玩家将自己的子往边界引就能赢
+     *
+     * 现在解决方案是边界一子当2~3子算权重
+     * 我打不过了
+     *
+     * @param level AI等级，也就是搜索深度
+     */
     public void AIPlay(int level, ChessPiece currentPlayer) {
         int nowPoints=-2147483647,ni=-1,nj=-1;
 
         ChessPiece[][] bfc=new ChessPiece[CHESS_COUNT][CHESS_COUNT];
-        eraseGray(currentPlayer);
+        checkPlaceable(currentPlayer);
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 bfc[i][j]=chessGrids[i][j].getChessPiece();
@@ -213,27 +260,22 @@ public class ChessBoardPanel extends JPanel {
         }
     }
 
-    private void eraseGray(ChessPiece currentPlayer) {
-        for (int i = 0; i < CHESS_COUNT; i++) {
-            for (int j = 0; j < CHESS_COUNT; j++) {
-                if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY)
-                    chessGrids[i][j].setChessPiece(null);
-            }
-        }
-        checkPlaceable(currentPlayer);
-    }
-
+    /**
+     * 这里就是递归搜索
+     */
     private int think(int dx, int dy, int level, ChessPiece currentPlayer) {
         //System.out.printf("Thinking... %d\n",level);
         if(level<=0) return 0;
 
         int dif=doMove(dx,dy,currentPlayer);
         currentPlayer=(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
-        eraseGray(currentPlayer);
+        checkPlaceable(currentPlayer);
         ChessPiece[][] bfc=new ChessPiece[CHESS_COUNT][CHESS_COUNT];
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 bfc[i][j]=chessGrids[i][j].getChessPiece();
+
+                if(i==0||j==0||i==CHESS_COUNT-1||j==CHESS_COUNT-1) dif+=2;
             }
         }
         int s=2147483647;
@@ -255,6 +297,9 @@ public class ChessBoardPanel extends JPanel {
         return dif;
     }
 
+    /**
+     * 判断是否存在灰色，作为一方跳过本回合的依据
+     */
     public boolean checkGray() {
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {

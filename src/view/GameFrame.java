@@ -27,6 +27,7 @@ public class GameFrame extends JFrame {
         this.setLocationRelativeTo(null);
 
 
+        //创建菜单栏MenuBar
         JMenuBar menuBar=new JMenuBar();
 
         JMenu fileMenu=new JMenu("File");
@@ -99,6 +100,7 @@ public class GameFrame extends JFrame {
         AILevel.add(AILevel2);
         AILevel.add(AILevel3);
         AILevel1.setSelected(true);
+        //菜单栏到此结束
 
 
 

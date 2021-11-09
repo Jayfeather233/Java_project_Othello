@@ -27,6 +27,9 @@ public class GameController {
         whiteScore = 2;
     }
 
+    /**
+     * 重新开始
+     */
     public void resetScore(){
         this.currentPlayer = ChessPiece.BLACK;
         blackScore = 2;
@@ -35,6 +38,9 @@ public class GameController {
         statusPanel.setScoreText(blackScore, whiteScore);
     }
 
+    /**
+     * 交换黑白
+     */
     public void swapPlayer() {
         currentPlayer = (currentPlayer == ChessPiece.BLACK) ? ChessPiece.WHITE : ChessPiece.BLACK;
         statusPanel.setPlayerText(currentPlayer.name());
@@ -43,6 +49,11 @@ public class GameController {
     }
 
 
+    /**
+     * 加分
+     * @param cur 要加分的颜色
+     * @param u 要加的分数，是负数就减
+     */
     public void countScore(ChessPiece cur,int u) {
         if (cur == ChessPiece.BLACK) {
             blackScore+=u;
@@ -86,14 +97,24 @@ public class GameController {
     public void writeDataToFile(String fileName) {
     }
 
+    /**
+     * 这个地能不能点
+     */
     public boolean canClick(int row, int col) {
         return gamePanel.canClickGrid(row, col, currentPlayer);
     }
 
+    /**
+     * 重新计算能放的位置（灰）
+     */
     public void checkPlaceable(ChessPiece currentPlayer) {
         gamePanel.checkPlaceable(currentPlayer);
     }
 
+    /**
+     * 跳过一回合
+     * 连续两回合则结束游戏
+     */
     public void jumpThrough(){
         jumpTime++;
         swapPlayer();
