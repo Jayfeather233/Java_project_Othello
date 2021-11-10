@@ -2,6 +2,8 @@
 
 This is my project in CS107-F21.
 
+This repository is currently private.
+
 Progressing in File read and write.
 
 
