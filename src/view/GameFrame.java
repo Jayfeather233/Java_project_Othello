@@ -61,8 +61,8 @@ public class GameFrame extends JFrame {
             chessBoardPanel.initialGame();
             controller.resetScore();
             controller.getGamePanel().repaint();
-            statusPanel.repaint();
             chessBoardPanel.checkPlaceable(controller.getCurrentPlayer());
+            statusPanel.repaint();
         });
         JMenuItem undoMenuItem=new JMenuItem("Undo");
         gameMenu.add(undoMenuItem);
@@ -98,7 +98,7 @@ public class GameFrame extends JFrame {
         JRadioButtonMenuItem AILevel1=new JRadioButtonMenuItem("Easy");
         JRadioButtonMenuItem AILevel2=new JRadioButtonMenuItem("Normal");
         JRadioButtonMenuItem AILevel3=new JRadioButtonMenuItem("Hard");
-        JRadioButtonMenuItem AILevel4=new JRadioButtonMenuItem("Very Hard (Maybe Slow)");
+        JRadioButtonMenuItem AILevel4=new JRadioButtonMenuItem("Very Hard (May be Slow)");
         AIMenu.add(AILevel1);
         AIMenu.add(AILevel2);
         AIMenu.add(AILevel3);

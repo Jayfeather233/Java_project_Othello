@@ -1,6 +1,5 @@
 package view;
 
-import components.ChessGridComponent;
 import model.ChessPiece;
 
 public class AIThread implements Runnable{

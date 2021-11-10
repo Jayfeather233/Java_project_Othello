@@ -28,7 +28,7 @@ public class GameController {
     }
 
     /**
-     * 重新开始
+     * 重新开始中重设分数
      */
     public void resetScore(){
         this.currentPlayer = ChessPiece.BLACK;
@@ -45,7 +45,7 @@ public class GameController {
         currentPlayer = (currentPlayer == ChessPiece.BLACK) ? ChessPiece.WHITE : ChessPiece.BLACK;
         statusPanel.setPlayerText(currentPlayer.name());
         statusPanel.setScoreText(blackScore, whiteScore);
-        checkPlaceable(currentPlayer);
+        checkPlaceable(currentPlayer);//交换完后重新计算能下的位置
     }
 
 

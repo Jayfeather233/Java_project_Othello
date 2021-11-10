@@ -80,6 +80,7 @@ public class ChessBoardPanel extends JPanel {
                 chessGrids[i][j].setChessPiece(null);
             }
         }
+        ChessGridComponent.setLast(-1,-1);
         chessGrids[3][3].setChessPiece(ChessPiece.BLACK);
         chessGrids[3][4].setChessPiece(ChessPiece.WHITE);
         chessGrids[4][3].setChessPiece(ChessPiece.WHITE);
@@ -172,8 +173,8 @@ public class ChessBoardPanel extends JPanel {
 
     /**
      * 在坐标dx,dy的方向T上检测这个地方能不能放  T是之前initialDirection中的
-     * @param ckOnly 如果为真是从一个放了棋的地方反推空地能不能放
-     *               如果为假是从空地推能不能放
+     * @param ckOnly 如果为真是从一个放了棋的地方反推空地能不能放，并标记灰色
+     *               如果为假是判断这个空地能不能放
      */
     private boolean canPut(int dx, int dy, int T, ChessPiece currentPlayer, boolean ckOnly) {
         int cnt=0;
@@ -242,7 +243,7 @@ public class ChessBoardPanel extends JPanel {
      *
      * 这个方法的问题在于，因为搜索本身限制，一次递归需遍历64个点，最多时进入10个递归
      * 搜索n次则复杂度 O(64*10^n)
-     * 所以只能搜索6~8步，也就34回合，
+     * 所以只能搜索6~8步，也就3 4回合，
      * 因为子如果到边界或者被围起来，就不会被吃掉，而在开局时搜索不到这一点
      * 并且它是以增加的子为权重，所以不会将子往边界走
      * 所以只要玩家将自己的子往边界引就能赢
