@@ -15,7 +15,7 @@ public class ChessGridComponent extends BasicComponent {
     public static Color gridColor = new Color(255, 150, 50);
     public static boolean AIOn;
 
-    private static int lastRow,lastCol;
+    private static int lastRow=-1,lastCol=-1;
 
     private ChessPiece chessPiece;
     private final int row;
@@ -48,6 +48,10 @@ public class ChessGridComponent extends BasicComponent {
 
                 GameFrame.controller.swapPlayer();
                 GameFrame.controller.getGamePanel().addUndo(row,col);//add Undo
+                GameFrame.controller.getGamePanel().repaint();//重绘
+                System.out.println("Repaint");
+
+
                 if(GameFrame.controller.getGamePanel().checkGray()){//没有灰色，跳过落子
                     JOptionPane.showMessageDialog(GameFrame.controller.getGamePanel(),
                             (GameFrame.controller.getCurrentPlayer()==ChessPiece.BLACK ? "BLACK" : "WHITE") +
@@ -57,12 +61,10 @@ public class ChessGridComponent extends BasicComponent {
                         JOptionPane.showMessageDialog(GameFrame.controller.getGamePanel(),
                                 (GameFrame.controller.getCurrentPlayer() == ChessPiece.BLACK ? "BLACK" : "WHITE") +
                                         " has nowhere to put! JumpThrough.");
+                        GameFrame.controller.jumpThrough();
                     }
                 }
-                GameFrame.controller.getGamePanel().repaint();//重绘
-                System.out.println("Repaint");
 
-                //Thread a=new Thread();
                 if(GameFrame.AIPiece==GameFrame.controller.getCurrentPlayer()){//如果开启AI就让AI跑下一步
                     AIOn=true;
                     Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece, GameFrame.controller.getGamePanel()));
