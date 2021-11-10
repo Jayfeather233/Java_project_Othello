@@ -64,6 +64,15 @@ public class GameFrame extends JFrame {
             statusPanel.repaint();
             chessBoardPanel.checkPlaceable(controller.getCurrentPlayer());
         });
+        JMenuItem undoMenuItem=new JMenuItem("Undo");
+        gameMenu.add(undoMenuItem);
+        undoMenuItem.addActionListener(e -> {
+            int u=controller.getGamePanel().doUndo();
+            controller.countScore(controller.getCurrentPlayer(),-u-1);
+            controller.countScore(controller.getCurrentPlayer()==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK,u);
+            controller.swapPlayer();
+            controller.getGamePanel().repaint();
+        });
 
         gameMenu.addSeparator();
 

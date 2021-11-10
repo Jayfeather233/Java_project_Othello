@@ -1,15 +1,19 @@
 package components;
 
 import model.*;
+import org.ietf.jgss.GSSManager;
+import view.AIThread;
 import view.GameFrame;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class ChessGridComponent extends BasicComponent {
+    public static int isRepainting=0;
     public static int chessSize;
     public static int gridSize;
     public static Color gridColor = new Color(255, 150, 50);
+    public static boolean AIOn;
 
     private static int lastRow,lastCol;
 
@@ -30,8 +34,8 @@ public class ChessGridComponent extends BasicComponent {
      */
     @Override
     public void onMouseClicked() {
-        System.out.printf("%s clicked (%d, %d)\n", GameFrame.controller.getCurrentPlayer(), row, col);
-        if (GameFrame.controller.canClick(row, col)) {
+        System.out.printf("%s clicked (%d, %d)", GameFrame.controller.getCurrentPlayer(), row, col);
+        if (GameFrame.controller.canClick(row, col) && !AIOn) {
             if (this.chessPiece == null || this.chessPiece == ChessPiece.GRAY) {//合法落子
                 lastCol=col;
                 lastRow=row;
@@ -56,12 +60,18 @@ public class ChessGridComponent extends BasicComponent {
                     }
                 }
                 GameFrame.controller.getGamePanel().repaint();//重绘
+                System.out.println("Repaint");
 
+                //Thread a=new Thread();
                 if(GameFrame.AIPiece==GameFrame.controller.getCurrentPlayer()){//如果开启AI就让AI跑下一步
-                    GameFrame.controller.getGamePanel().AIPlay(GameFrame.AI_Level,GameFrame.AIPiece);// AIPlay
+                    AIOn=true;
+                    Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece, GameFrame.controller.getGamePanel()));
+                    a.start();//Run AI in thread
                 }
-            }
-        }
+            }else
+                System.out.println("Illegal in 2");
+        }else
+            System.out.println("Illegal in 1");
     }
 
 
@@ -73,6 +83,10 @@ public class ChessGridComponent extends BasicComponent {
         this.chessPiece = chessPiece;
     }
 
+    public static void setLast(int r,int c){
+        lastCol=c;
+        lastRow=r;
+    }
     public int getRow() {
         return row;
     }
@@ -97,8 +111,10 @@ public class ChessGridComponent extends BasicComponent {
 
     @Override
     public void paintComponent(Graphics g) {
+        isRepainting++;
         super.printComponents(g);
         drawPiece(g);
+        isRepainting--;
     }
 
 

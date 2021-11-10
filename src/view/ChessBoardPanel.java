@@ -112,10 +112,35 @@ public class ChessBoardPanel extends JPanel {
     public void addUndo(int x,int y){
         undoList[undoLength][0]=x;
         undoList[undoLength][1]=y;
-        System.out.printf("(%d,%d)(",undoList[undoLength][0],undoList[undoLength][1]);
-        for(int i=0;i<8;i++) System.out.printf("%d,",undoList[undoLength][i+2]);
-        System.out.println(")");
         ++undoLength;
+    }
+
+    /**
+     * 来一次撤回
+     * @return 撤回了多少子
+     */
+    public int doUndo(){
+        undoLength--;
+        ChessPiece cur=chessGrids[undoList[undoLength][0]][undoList[undoLength][1]].getChessPiece();
+        int t=0;
+        cur=(cur==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
+        for(int T=0;T<directionCounter;T++){//将棋子颜色翻转
+            int dx=undoList[undoLength][0]+xDirection[T];
+            int dy=undoList[undoLength][1]+yDirection[T];
+            t+=undoList[undoLength][T+2];
+            while(undoList[undoLength][T+2]!=0){
+                undoList[undoLength][T+2]--;
+                chessGrids[dx][dy].setChessPiece(cur);
+                dx+=xDirection[T];
+                dy+=yDirection[T];
+            }
+        }
+        chessGrids[undoList[undoLength][0]][undoList[undoLength][1]].setChessPiece(null);
+
+        if(undoLength>0) ChessGridComponent.setLast(undoList[undoLength-1][0],undoList[undoLength-1][1]);//设置上一个落子点（红）
+        else ChessGridComponent.setLast(0,0);
+
+        return t;
     }
 
     /**
@@ -136,8 +161,6 @@ public class ChessBoardPanel extends JPanel {
                 }
             }
         }
-
-        repaint();//对棋盘重画，不然gui显示不更新
     }
 
     /**
@@ -214,38 +237,29 @@ public class ChessBoardPanel extends JPanel {
     /**
      * AI调用入口，函数结束会调用某个格子的onMouseClicked来模拟点击
      * AI思路：遍历所有能下的点，假如我下这里，那么搜索下一个玩家继续移动最优的值，找到这个值的最小，就是我们移动的地方
-     * 值：指自己增加的子数
-     * 最优：指机器认为最优，也就是获得的子最大
+     * 值：指与对家的得分之差
+     * 最优：指机器认为最优，也就是与对家得分之差最大
      *
-     * 这个方法的问题在于，因为搜索本身限制，只能搜索4~6步，也就3回合，
+     * 这个方法的问题在于，因为搜索本身限制，一次递归需遍历64个点，最多时进入10个递归
+     * 搜索n次则复杂度 O(64*10^n)
+     * 所以只能搜索6~8步，也就34回合，
      * 因为子如果到边界或者被围起来，就不会被吃掉，而在开局时搜索不到这一点
      * 并且它是以增加的子为权重，所以不会将子往边界走
      * 所以只要玩家将自己的子往边界引就能赢
      *
      * 现在解决方案是边界一子当2~3子算权重
-     * 我打不过了
+     * 它变强了
      *
      * @param level AI等级，也就是搜索深度
      */
     public void AIPlay(int level, ChessPiece currentPlayer) {
         int nowPoints=-2147483647,ni=-1,nj=-1;
 
-        ChessPiece[][] bfc=new ChessPiece[CHESS_COUNT][CHESS_COUNT];
         checkPlaceable(currentPlayer);
-        for (int i = 0; i < CHESS_COUNT; i++) {
-            for (int j = 0; j < CHESS_COUNT; j++) {
-                bfc[i][j]=chessGrids[i][j].getChessPiece();
-            }
-        }
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if(chessGrids[i][j].getChessPiece()==ChessPiece.GRAY) {
                     int tmp = think(i, j, level, currentPlayer);
-                    for (int i2 = 0; i2 < CHESS_COUNT; i2++) {
-                        for (int j2 = 0; j2 < CHESS_COUNT; j2++) {
-                            chessGrids[i2][j2].setChessPiece(bfc[i2][j2]);
-                        }
-                    }
                     if (nowPoints<tmp){
                         nowPoints=tmp;
                         ni=i;
@@ -254,6 +268,7 @@ public class ChessBoardPanel extends JPanel {
                 }
             }
         }
+        ChessGridComponent.AIOn=false;
         if(ni==-1) GameFrame.controller.jumpThrough();
         else{
             chessGrids[ni][nj].onMouseClicked();
@@ -264,33 +279,23 @@ public class ChessBoardPanel extends JPanel {
      * 这里就是递归搜索
      */
     private int think(int dx, int dy, int level, ChessPiece currentPlayer) {
-        //System.out.printf("Thinking... %d\n",level);
         if(level<=0) return 0;
 
         int dif=doMove(dx,dy,currentPlayer);
+        addUndo(dx,dy);
         currentPlayer=(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
         checkPlaceable(currentPlayer);
-        ChessPiece[][] bfc=new ChessPiece[CHESS_COUNT][CHESS_COUNT];
-        for (int i = 0; i < CHESS_COUNT; i++) {
-            for (int j = 0; j < CHESS_COUNT; j++) {
-                bfc[i][j]=chessGrids[i][j].getChessPiece();
-
-                if(i==0||j==0||i==CHESS_COUNT-1||j==CHESS_COUNT-1) dif+=2;
-            }
-        }
         int s=2147483647;
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY) {
                     s=Math.min(s,think(i,j,level-1,currentPlayer));
-                    for (int i2 = 0; i2 < CHESS_COUNT; i2++) {
-                        for (int j2 = 0; j2 < CHESS_COUNT; j2++) {
-                            chessGrids[i2][j2].setChessPiece(bfc[i2][j2]);
-                        }
-                    }
                 }
             }
         }
+        doUndo();
+        currentPlayer=(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
+        checkPlaceable(currentPlayer);
 
         if(s!=2147483647) dif-=s;
 
