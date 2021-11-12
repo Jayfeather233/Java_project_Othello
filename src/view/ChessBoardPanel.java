@@ -9,6 +9,7 @@ import java.awt.*;
 public class ChessBoardPanel extends JPanel {
     public static final int CHESS_COUNT = 8;
     private ChessGridComponent[][] chessGrids;
+    private int[][] panelScore;//棋盘上的权值
     private int[][] undoList;
     private int undoLength=0;
     private int[] xDirection;
@@ -23,6 +24,7 @@ public class ChessBoardPanel extends JPanel {
         int length = Math.min(width, height);
         this.setSize(length, length);
         undoList=new int[100][11];
+        panelScore=new int[9][9];
         ChessGridComponent.gridSize = length / CHESS_COUNT;
         ChessGridComponent.chessSize = (int) (ChessGridComponent.gridSize * 0.8);
         System.out.printf("width = %d height = %d gridSize = %d chessSize = %d\n",
@@ -36,7 +38,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     /**
-     * 初始化方向
+     * 初始化方向和棋盘权值
      */
     private void initialDirection() {
         xDirection=new int[8];
@@ -51,6 +53,19 @@ public class ChessBoardPanel extends JPanel {
                 }
             }
         }//记录八个方向的xy偏移量
+
+        for(int i=0;i<8;i++){
+            for(int j=0;j<8;j++){
+                if(i*(7-i)==0&&j*(7-j)==0)//在角
+                    panelScore[i][j]=4;
+                else if((i<=1||i>=6)&&(j<=1||j>=6))//在角四周
+                    panelScore[i][j]=0;
+                else if((i-1)*(j-1)*(6-i)*(6-j)==0)//在第二行
+                    panelScore[i][j]=1;
+                else//在边和中间
+                    panelScore[i][j]=2;
+            }
+        }
     }
 
     /**
@@ -266,10 +281,19 @@ public class ChessBoardPanel extends JPanel {
         int nowPoints=-2147483647,ni=-1,nj=-1;
 
         checkPlaceable(currentPlayer);
+        int t=0,u=0;
+        for (int i = 0; i < CHESS_COUNT; i++) {
+            for (int j = 0; j < CHESS_COUNT; j++) {
+                if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY) {
+                    t++;
+                }else if(chessGrids[i][j].getChessPiece()!=null)
+                    u++;
+            }
+        }
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if(chessGrids[i][j].getChessPiece()==ChessPiece.GRAY) {
-                    int tmp = think(i, j, level, currentPlayer);
+                    int tmp = (u<7||(50<=u&&t<=5)||52<=u) ? (56<u ? think(i, j, level+4, currentPlayer): think(i, j, level+2, currentPlayer)) : think(i, j, level, currentPlayer);
                     if (nowPoints<tmp){
                         nowPoints=tmp;
                         ni=i;
@@ -307,7 +331,8 @@ public class ChessBoardPanel extends JPanel {
     private int think(int dx, int dy, int level, ChessPiece currentPlayer) {
         if(level<=0) return 0;
 
-        int dif=doMove(dx,dy,currentPlayer);
+        int dif=0;
+        doMove(dx,dy,currentPlayer);
         addUndo(dx,dy);
         currentPlayer=(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
         checkPlaceable(currentPlayer);
@@ -317,8 +342,11 @@ public class ChessBoardPanel extends JPanel {
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY) {
                     s=Math.min(s,think(i,j,level-1,currentPlayer));
                 }
+                if(chessGrids[i][j].getChessPiece()==(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK))
+                    dif+=panelScore[i][j];
             }
         }
+
         doUndo();
         currentPlayer=(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
         checkPlaceable(currentPlayer);
