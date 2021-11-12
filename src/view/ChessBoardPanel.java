@@ -121,6 +121,7 @@ public class ChessBoardPanel extends JPanel {
      * @return 撤回了多少子
      */
     public int doUndo(){
+        if(undoLength<=0) return 0;
         undoLength--;
         ChessPiece cur=chessGrids[undoList[undoLength][0]][undoList[undoLength][1]].getChessPiece();
         int t=0;
@@ -309,9 +310,14 @@ public class ChessBoardPanel extends JPanel {
     public boolean checkGray() {
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
+                if(GameFrame.cheat&&chessGrids[i][j].getChessPiece()==null) return false;
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY) return false;
             }
         }
         return true;
+    }
+
+    public void resetUndo() {
+        undoLength=0;
     }
 }

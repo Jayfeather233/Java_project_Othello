@@ -61,6 +61,7 @@ public class GameFrame extends JFrame {
             chessBoardPanel.initialGame();
             controller.resetScore();
             controller.getGamePanel().repaint();
+            controller.getGamePanel().resetUndo();
             chessBoardPanel.checkPlaceable(controller.getCurrentPlayer());
             statusPanel.repaint();
         });
@@ -68,9 +69,17 @@ public class GameFrame extends JFrame {
         gameMenu.add(undoMenuItem);
         undoMenuItem.addActionListener(e -> {
             int u=controller.getGamePanel().doUndo();
-            controller.countScore(controller.getCurrentPlayer(),-u-1);
-            controller.countScore(controller.getCurrentPlayer()==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK,u);
+            controller.countScore(controller.getCurrentPlayer(),u);
+            controller.countScore(controller.getCurrentPlayer()==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK,-u-1);
             controller.swapPlayer();
+            System.out.println(u);
+            if(AIPiece!=null) {
+                u = controller.getGamePanel().doUndo();
+                controller.countScore(controller.getCurrentPlayer(), u);
+                controller.countScore(controller.getCurrentPlayer() == ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK, -u-1);
+                controller.swapPlayer();
+                System.out.println(u);
+            }
             controller.getGamePanel().repaint();
         });
 
@@ -81,6 +90,20 @@ public class GameFrame extends JFrame {
         cheatMode.addActionListener(e -> {
             System.out.println("Cheat mode "+ (cheat ? "off" : "on"));
             cheat=!cheat;
+            controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
+
+            if(controller.getGamePanel().checkGray()){//没有灰色，跳过落子
+                JOptionPane.showMessageDialog(controller.getGamePanel(),
+                        (controller.getCurrentPlayer()==ChessPiece.BLACK ? "BLACK" : "WHITE") +
+                                " has nowhere to put! JumpThrough.");
+                controller.jumpThrough();
+                if(controller.getGamePanel().checkGray()) {//连续判断
+                    JOptionPane.showMessageDialog(controller.getGamePanel(),
+                            (controller.getCurrentPlayer() == ChessPiece.BLACK ? "BLACK" : "WHITE") +
+                                    " has nowhere to put! JumpThrough.");
+                    controller.jumpThrough();
+                }
+            }
         });
 
         JCheckBoxMenuItem AIMode=new JCheckBoxMenuItem("AI mode");
