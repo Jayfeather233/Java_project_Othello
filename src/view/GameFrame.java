@@ -1,6 +1,7 @@
 package view;
 
 
+import components.ChessGridComponent;
 import controller.GameController;
 import model.ChessPiece;
 
@@ -68,18 +69,27 @@ public class GameFrame extends JFrame {
         JMenuItem undoMenuItem=new JMenuItem("Undo");
         gameMenu.add(undoMenuItem);
         undoMenuItem.addActionListener(e -> {
-            int u=controller.getGamePanel().doUndo();
-            controller.countScore(controller.getCurrentPlayer(),u);
-            controller.countScore(controller.getCurrentPlayer()==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK,-u-1);
-            controller.swapPlayer();
-            System.out.println(u);
-            if(AIPiece!=null) {
+            int cur,u;
+            while(controller.getGamePanel().hasNextUndo()&&AIPiece==(controller.getGamePanel().getLastUndo()==1?ChessPiece.BLACK:ChessPiece.WHITE)) {
+                cur = controller.getGamePanel().getLastUndo();
                 u = controller.getGamePanel().doUndo();
-                controller.countScore(controller.getCurrentPlayer(), u);
-                controller.countScore(controller.getCurrentPlayer() == ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK, -u-1);
-                controller.swapPlayer();
+                controller.countScore(cur==1 ? ChessPiece.WHITE : ChessPiece.BLACK,u);
+                controller.countScore(cur==1 ? ChessPiece.BLACK : ChessPiece.WHITE,-u-1);
+                if((cur==1?ChessPiece.BLACK:ChessPiece.WHITE)!=controller.getCurrentPlayer())
+                    controller.swapPlayer();
+                else
+                    controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
                 System.out.println(u);
             }
+            cur=controller.getGamePanel().getLastUndo();
+            u=controller.getGamePanel().doUndo();
+            controller.countScore(cur==1 ? ChessPiece.WHITE : ChessPiece.BLACK,u);
+            controller.countScore(cur==1 ? ChessPiece.BLACK : ChessPiece.WHITE,-u-1);
+            if((cur==1?ChessPiece.BLACK:ChessPiece.WHITE)!=controller.getCurrentPlayer())
+                controller.swapPlayer();
+            else
+                controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
+            System.out.println(u);
             controller.getGamePanel().repaint();
         });
 
@@ -93,16 +103,13 @@ public class GameFrame extends JFrame {
             controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
 
             if(controller.getGamePanel().checkGray()){//没有灰色，跳过落子
-                JOptionPane.showMessageDialog(controller.getGamePanel(),
-                        (controller.getCurrentPlayer()==ChessPiece.BLACK ? "BLACK" : "WHITE") +
-                                " has nowhere to put! JumpThrough.");
-                controller.jumpThrough();
-                if(controller.getGamePanel().checkGray()) {//连续判断
-                    JOptionPane.showMessageDialog(controller.getGamePanel(),
-                            (controller.getCurrentPlayer() == ChessPiece.BLACK ? "BLACK" : "WHITE") +
-                                    " has nowhere to put! JumpThrough.");
-                    controller.jumpThrough();
-                }
+                controller.getGamePanel().doJump();
+            }
+
+            if(GameFrame.AIPiece==GameFrame.controller.getCurrentPlayer()){//如果开启AI就让AI跑下一步
+                ChessGridComponent.AIOn=true;
+                Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece, GameFrame.controller.getGamePanel()));
+                a.start();//Run AI in thread
             }
         });
 

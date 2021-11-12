@@ -118,6 +118,7 @@ public class GameController {
     public void jumpThrough(){
         jumpTime++;
         swapPlayer();
+        System.out.println("jump");
         if(jumpTime==2){
             endGame();
         }

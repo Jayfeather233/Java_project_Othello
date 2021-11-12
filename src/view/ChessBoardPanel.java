@@ -22,7 +22,7 @@ public class ChessBoardPanel extends JPanel {
         this.setBackground(Color.BLACK);
         int length = Math.min(width, height);
         this.setSize(length, length);
-        undoList=new int[100][10];
+        undoList=new int[100][11];
         ChessGridComponent.gridSize = length / CHESS_COUNT;
         ChessGridComponent.chessSize = (int) (ChessGridComponent.gridSize * 0.8);
         System.out.printf("width = %d height = %d gridSize = %d chessSize = %d\n",
@@ -146,6 +146,13 @@ public class ChessBoardPanel extends JPanel {
     }
 
     /**
+     * @return 上一个子是谁下的
+     */
+    public int getLastUndo(){
+        return undoList[undoLength-1][10];
+    }
+
+    /**
      * 用灰色列举出当前玩家能放的位置
      * @param currentPlayer 当前玩家颜色
      */
@@ -233,6 +240,7 @@ public class ChessBoardPanel extends JPanel {
             }
         }
         chessGrids[row][col].setChessPiece(currentPlayer);
+        undoList[undoLength][10]=currentPlayer==ChessPiece.BLACK ? 1 : 0;
         return t+1;
     }
 
@@ -271,9 +279,25 @@ public class ChessBoardPanel extends JPanel {
             }
         }
         ChessGridComponent.AIOn=false;
-        if(ni==-1) GameFrame.controller.jumpThrough();
+        if(ni==-1){
+            doJump();
+        }
         else{
+            System.out.printf("AI play at %d,%d\n",ni,nj);
             chessGrids[ni][nj].onMouseClicked();
+        }
+    }
+
+    public void doJump() {
+        JOptionPane.showMessageDialog(GameFrame.controller.getGamePanel(),
+                (GameFrame.controller.getCurrentPlayer() == ChessPiece.BLACK ? "BLACK" : "WHITE") +
+                        " has nowhere to put! JumpThrough.");
+        GameFrame.controller.jumpThrough();
+        if(GameFrame.controller.getGamePanel().checkGray()) {//连续判断
+            JOptionPane.showMessageDialog(GameFrame.controller.getGamePanel(),
+                    (GameFrame.controller.getCurrentPlayer() == ChessPiece.BLACK ? "BLACK" : "WHITE") +
+                            " has nowhere to put! JumpThrough.");
+            GameFrame.controller.jumpThrough();
         }
     }
 
@@ -319,5 +343,9 @@ public class ChessBoardPanel extends JPanel {
 
     public void resetUndo() {
         undoLength=0;
+    }
+
+    public boolean hasNextUndo() {
+        return undoLength>0;
     }
 }

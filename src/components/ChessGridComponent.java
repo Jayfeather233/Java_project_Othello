@@ -53,16 +53,7 @@ public class ChessGridComponent extends BasicComponent {
 
 
                 if(GameFrame.controller.getGamePanel().checkGray()){//没有灰色，跳过落子
-                    JOptionPane.showMessageDialog(GameFrame.controller.getGamePanel(),
-                            (GameFrame.controller.getCurrentPlayer()==ChessPiece.BLACK ? "BLACK" : "WHITE") +
-                            " has nowhere to put! JumpThrough.");
-                    GameFrame.controller.jumpThrough();
-                    if(GameFrame.controller.getGamePanel().checkGray()) {//连续判断
-                        JOptionPane.showMessageDialog(GameFrame.controller.getGamePanel(),
-                                (GameFrame.controller.getCurrentPlayer() == ChessPiece.BLACK ? "BLACK" : "WHITE") +
-                                        " has nowhere to put! JumpThrough.");
-                        GameFrame.controller.jumpThrough();
-                    }
+                    GameFrame.controller.getGamePanel().doJump();
                 }
 
                 if(GameFrame.AIPiece==GameFrame.controller.getCurrentPlayer()){//如果开启AI就让AI跑下一步
