@@ -57,13 +57,13 @@ public class ChessBoardPanel extends JPanel {
         for(int i=0;i<8;i++){
             for(int j=0;j<8;j++){
                 if(i*(7-i)==0&&j*(7-j)==0)//在角
-                    panelScore[i][j]=4;
+                    panelScore[i][j]=6;
                 else if((i<=1||i>=6)&&(j<=1||j>=6))//在角四周
-                    panelScore[i][j]=0;
-                else if((i-1)*(j-1)*(6-i)*(6-j)==0)//在第二行
-                    panelScore[i][j]=1;
-                else//在边和中间
                     panelScore[i][j]=2;
+                else if((i-1)*(j-1)*(6-i)*(6-j)==0)//在第二行
+                    panelScore[i][j]=3;
+                else//在边和中间
+                    panelScore[i][j]=5;
             }
         }
     }
@@ -272,7 +272,7 @@ public class ChessBoardPanel extends JPanel {
      * 并且它是以增加的子为权重，所以不会将子往边界走
      * 所以只要玩家将自己的子往边界引就能赢
      *
-     * 现在解决方案是边界一子当2~3子算权重
+     * 现在解决方案是给棋盘权重
      * 它变强了
      *
      * @param level AI等级，也就是搜索深度
@@ -286,14 +286,19 @@ public class ChessBoardPanel extends JPanel {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY) {
                     t++;
-                }else if(chessGrids[i][j].getChessPiece()!=null)
+                }else if(chessGrids[i][j].getChessPiece()!=null) {
                     u++;
+                }
             }
         }
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if(chessGrids[i][j].getChessPiece()==ChessPiece.GRAY) {
-                    int tmp = (u<7||(50<=u&&t<=5)||52<=u) ? (56<u ? think(i, j, level+4, currentPlayer): think(i, j, level+2, currentPlayer)) : think(i, j, level, currentPlayer);
+                    int tmp = (u<7||(50<=u&&t<=5)||52<=u)
+                            ? (56<u
+                                ? think(i, j, 64-u, currentPlayer,false,currentPlayer)
+                                : think(i, j, level+2, currentPlayer,true,currentPlayer))
+                            : think(i, j, level, currentPlayer,true,currentPlayer);
                     if (nowPoints<tmp){
                         nowPoints=tmp;
                         ni=i;
@@ -328,32 +333,45 @@ public class ChessBoardPanel extends JPanel {
     /**
      * 这里就是递归搜索
      */
-    private int think(int dx, int dy, int level, ChessPiece currentPlayer) {
-        if(level<=0) return 0;
+    private int think(int dx, int dy, int level, ChessPiece currentPlayer,boolean enableScore,ChessPiece AIPiece) {
+        if(dx!=-1) {
+            doMove(dx, dy, currentPlayer);
+            addUndo(dx, dy);
+        }
+        if(level==1) {
+            int dif=0;
+            for (int i = 0; i < CHESS_COUNT; i++) {
+                for (int j = 0; j < CHESS_COUNT; j++) {
+                    if (chessGrids[i][j].getChessPiece() == AIPiece) {
+                        if(enableScore) dif += panelScore[i][j];
+                        else dif++;
+                    }
+                }
+            }
+            if(dx!=-1) doUndo();
+            checkPlaceable(currentPlayer);
+            return dif;
+        }
 
-        int dif=0;
-        doMove(dx,dy,currentPlayer);
-        addUndo(dx,dy);
         currentPlayer=(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
         checkPlaceable(currentPlayer);
-        int s=2147483647;
+        int s=-1;
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY) {
-                    s=Math.min(s,think(i,j,level-1,currentPlayer));
+                    if(AIPiece==currentPlayer) s=Math.max(s,think(i,j,level-1,currentPlayer,enableScore,AIPiece));
+                    else s=Math.min(s,think(i,j,level-1,currentPlayer,enableScore,AIPiece));
                 }
-                if(chessGrids[i][j].getChessPiece()==(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK))
-                    dif+=panelScore[i][j];
             }
         }
+        if(s==-1) s=think(-1,-1,level-1,currentPlayer,enableScore,AIPiece);
 
-        doUndo();
+
+        if(dx!=-1) doUndo();
         currentPlayer=(currentPlayer==ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
         checkPlaceable(currentPlayer);
 
-        if(s!=2147483647) dif-=s;
-
-        return dif;
+        return s;
     }
 
     /**
