@@ -140,7 +140,7 @@ public class GameFrame extends JFrame {
             blackChess= ImageIO.read(new File("resource\\black.png"));
             whiteChess= ImageIO.read(new File("resource\\white.png"));
             grayChess= ImageIO.read(new File("resource\\gray.png"));
-            panelImage=ImageIO.read(new File("resource\\panel.jpg"));
+            panelImage=ImageIO.read(new File("resource\\panel.png"));
 
         } catch (IOException e) {
             e.printStackTrace();

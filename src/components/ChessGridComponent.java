@@ -95,9 +95,6 @@ public class ChessGridComponent extends BasicComponent {
     }
 
     public void drawPiece(Graphics g) {
-        /*
-        g.setColor(gridColor);
-        g.fillRect(1, 1, this.getWidth() - 2, this.getHeight() - 2);*/
 
         if (this.chessPiece != null) {
 
@@ -112,7 +109,7 @@ public class ChessGridComponent extends BasicComponent {
 
 
     @Override
-    public void paintComponent(Graphics g) {
+    public synchronized void paintComponent(Graphics g) {
         isRepainting++;
         super.printComponents(g);
         drawPiece(g);
