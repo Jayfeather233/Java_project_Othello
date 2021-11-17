@@ -101,7 +101,7 @@ public class GameController {
      * 这个地能不能点
      */
     public boolean canClick(int row, int col) {
-        return gamePanel.canClickGrid(row, col, currentPlayer);
+        return gamePanel.canClickGrid(row, col);
     }
 
     /**
@@ -129,7 +129,7 @@ public class GameController {
         GameFrame.controller.getGamePanel().initialGame();
         GameFrame.controller.resetScore();
         GameFrame.controller.getGamePanel().repaint();
-        GameFrame.controller.getGamePanel().resetUndo();
+        GameFrame.controller.getGamePanel().getUndoList().resetUndoList();
         GameFrame.controller.getGamePanel().checkPlaceable(GameFrame.controller.getCurrentPlayer());
         statusPanel.repaint();
     }

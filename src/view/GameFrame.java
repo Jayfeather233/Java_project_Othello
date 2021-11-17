@@ -2,11 +2,15 @@ package view;
 
 
 import components.ChessGridComponent;
+import controller.AIThread;
 import controller.GameController;
 import model.ChessPiece;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 public class GameFrame extends JFrame {
     public static GameController controller;
@@ -15,6 +19,16 @@ public class GameFrame extends JFrame {
     public static boolean cheat=false;
     public static ChessPiece AIPiece=null;
     public static int AI_Level=1;
+    private static Image blackChess;
+    private static Image whiteChess;
+    private static Image grayChess;
+    private static Image panelImage;
+
+    public static Image getImage(ChessPiece u){
+        if(u==ChessPiece.BLACK) return blackChess;
+        else if(u==ChessPiece.WHITE) return whiteChess;
+        else return grayChess;
+    }
 
     public GameFrame(int frameSize) {
 
@@ -62,36 +76,13 @@ public class GameFrame extends JFrame {
             chessBoardPanel.initialGame();
             controller.resetScore();
             controller.getGamePanel().repaint();
-            controller.getGamePanel().resetUndo();
+            controller.getGamePanel().getUndoList().resetUndoList();
             chessBoardPanel.checkPlaceable(controller.getCurrentPlayer());
             statusPanel.repaint();
         });
         JMenuItem undoMenuItem=new JMenuItem("Undo");
         gameMenu.add(undoMenuItem);
-        undoMenuItem.addActionListener(e -> {
-            int cur,u;
-            while(controller.getGamePanel().hasNextUndo()&&AIPiece==(controller.getGamePanel().getLastUndo()==1?ChessPiece.BLACK:ChessPiece.WHITE)) {
-                cur = controller.getGamePanel().getLastUndo();
-                u = controller.getGamePanel().doUndo();
-                controller.countScore(cur==1 ? ChessPiece.WHITE : ChessPiece.BLACK,u);
-                controller.countScore(cur==1 ? ChessPiece.BLACK : ChessPiece.WHITE,-u-1);
-                if((cur==1?ChessPiece.BLACK:ChessPiece.WHITE)!=controller.getCurrentPlayer())
-                    controller.swapPlayer();
-                else
-                    controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
-                System.out.println(u);
-            }
-            cur=controller.getGamePanel().getLastUndo();
-            u=controller.getGamePanel().doUndo();
-            controller.countScore(cur==1 ? ChessPiece.WHITE : ChessPiece.BLACK,u);
-            controller.countScore(cur==1 ? ChessPiece.BLACK : ChessPiece.WHITE,-u-1);
-            if((cur==1?ChessPiece.BLACK:ChessPiece.WHITE)!=controller.getCurrentPlayer())
-                controller.swapPlayer();
-            else
-                controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
-            System.out.println(u);
-            controller.getGamePanel().repaint();
-        });
+        undoMenuItem.addActionListener(e -> GameFrame.controller.getGamePanel().doUndo());
 
         gameMenu.addSeparator();
 
@@ -108,7 +99,7 @@ public class GameFrame extends JFrame {
 
             if(GameFrame.AIPiece==GameFrame.controller.getCurrentPlayer()){//如果开启AI就让AI跑下一步
                 ChessGridComponent.AIOn=true;
-                Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece, GameFrame.controller.getGamePanel()));
+                Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece));
                 a.start();//Run AI in thread
             }
         });
@@ -145,6 +136,15 @@ public class GameFrame extends JFrame {
         AILevel1.setSelected(true);
         //菜单栏到此结束
 
+        try {
+            blackChess= ImageIO.read(new File("resource\\black.png"));
+            whiteChess= ImageIO.read(new File("resource\\white.png"));
+            grayChess= ImageIO.read(new File("resource\\gray.png"));
+            panelImage=ImageIO.read(new File("resource\\panel.jpg"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         chessBoardPanel = new ChessBoardPanel((int) (this.getWidth() * 0.8), (int) (this.getHeight() * 0.7));
@@ -164,5 +164,9 @@ public class GameFrame extends JFrame {
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+    }
+
+    public static Image getPanelImage() {
+        return panelImage;
     }
 }

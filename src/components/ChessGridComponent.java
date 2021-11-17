@@ -1,11 +1,11 @@
 package components;
 
+import controller.GameController;
 import model.*;
-import org.ietf.jgss.GSSManager;
-import view.AIThread;
+import controller.AIThread;
+import view.ChessBoardPanel;
 import view.GameFrame;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class ChessGridComponent extends BasicComponent {
@@ -39,32 +39,38 @@ public class ChessGridComponent extends BasicComponent {
             if (this.chessPiece == null || this.chessPiece == ChessPiece.GRAY) {//合法落子
                 lastCol=col;
                 lastRow=row;
-                int u=GameFrame.controller.getGamePanel().doMove(row,col,GameFrame.controller.getCurrentPlayer());//doMove
-                GameFrame.controller.countScore(GameFrame.controller.getCurrentPlayer(),u);//countScore plus
-                GameFrame.controller.jumpTime=0;
-                GameFrame.controller.countScore(
-                        GameFrame.controller.getCurrentPlayer()==ChessPiece.BLACK ?
+                GameController controller=GameFrame.controller;
+                ChessBoardPanel panel=GameFrame.controller.getGamePanel();
+
+
+                int u=panel.doMove(row,col,controller.getCurrentPlayer());//doMove
+
+                controller.countScore(controller.getCurrentPlayer(),u);//countScore plus
+                controller.jumpTime=0;
+                controller.countScore(
+                        controller.getCurrentPlayer()==ChessPiece.BLACK ?
                                 ChessPiece.WHITE : ChessPiece.BLACK,-u+1);//countScore minus
 
-                GameFrame.controller.swapPlayer();
-                GameFrame.controller.getGamePanel().addUndo(row,col);//add Undo
-                GameFrame.controller.getGamePanel().repaint();//重绘
+                panel.addUndo(row,col,controller.getCurrentPlayer());//add Undo
+
+                controller.swapPlayer();
+                panel.repaint();//重绘
                 System.out.println("Repaint");
 
 
-                if(GameFrame.controller.getGamePanel().checkGray()){//没有灰色，跳过落子
-                    GameFrame.controller.getGamePanel().doJump();
+                if(panel.checkGray()){//没有灰色，跳过落子
+                    panel.doJump();
                 }
 
-                if(GameFrame.AIPiece==GameFrame.controller.getCurrentPlayer()){//如果开启AI就让AI跑下一步
+                if(GameFrame.AIPiece==controller.getCurrentPlayer()){//如果开启AI就让AI跑下一步
                     AIOn=true;
-                    Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece, GameFrame.controller.getGamePanel()));
+                    Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece));
                     a.start();//Run AI in thread
                 }
             }else
                 System.out.println("Illegal in 2");
         }else
-            System.out.println("Illegal in 1");
+            System.out.printf("Illegal in 1,AIOn=%d\n",AIOn ? 1 : 0);
     }
 
 
@@ -89,11 +95,14 @@ public class ChessGridComponent extends BasicComponent {
     }
 
     public void drawPiece(Graphics g) {
+        /*
         g.setColor(gridColor);
-        g.fillRect(1, 1, this.getWidth() - 2, this.getHeight() - 2);
+        g.fillRect(1, 1, this.getWidth() - 2, this.getHeight() - 2);*/
+
         if (this.chessPiece != null) {
-            g.setColor(chessPiece.getColor());
-            g.fillOval((gridSize - chessSize) / 2, (gridSize - chessSize) / 2, chessSize, chessSize);
+
+            g.drawImage(GameFrame.getImage(this.chessPiece),(gridSize - chessSize) / 2, (gridSize - chessSize) / 2, chessSize, chessSize,null);
+
             if(col==lastCol&&row==lastRow) {//最后一子突出显示
                 g.setColor(Color.RED);
                 g.fillRect((gridSize - chessSize / 5) / 2, (gridSize - chessSize / 5) / 2, chessSize / 5, chessSize / 5);
