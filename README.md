@@ -4,9 +4,6 @@ This is my project in CS107-F21.
 
 This repository is currently private.
 
-Progressing in File read and write.
-
-
 ### Task 2: Load and Save a Game (20 pts)
 * Your program should be able to load an existing game from a text file with a predefined format by clicking buttons. After loading, all disks should be placed at
 their positions given in the text file. The save file includes at least the current
