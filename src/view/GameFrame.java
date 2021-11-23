@@ -18,7 +18,7 @@ public class GameFrame extends JFrame {
     public static GameController controller;
     private ChessBoardPanel chessBoardPanel;
     private StatusPanel statusPanel;
-    public static boolean cheat=false;
+    public static boolean cheat=false,AICheat=false;
     public static ChessPiece AIPiece=null;
     public static int AI_Level=1;
     private static Image blackChess;
@@ -73,7 +73,14 @@ public class GameFrame extends JFrame {
         });
 
         JMenuItem restartMenuItem=new JMenuItem("Restart");
+        undoMenuItem=new JMenuItem("Undo");
+        JMenuItem reverseX=new JMenuItem("Horizontal Flip");
+        JMenuItem reverseY=new JMenuItem("Vertical Flip");
         gameMenu.add(restartMenuItem);
+        gameMenu.add(undoMenuItem);
+        gameMenu.add(reverseX);
+        gameMenu.add(reverseY);
+
         restartMenuItem.addActionListener(e -> {
             System.out.println(e);
             chessBoardPanel.initialGame();
@@ -84,24 +91,30 @@ public class GameFrame extends JFrame {
             setUndoEnabled(false);
             statusPanel.repaint();
         });
-        undoMenuItem=new JMenuItem("Undo");
         setUndoEnabled(false);
-        gameMenu.add(undoMenuItem);
         undoMenuItem.addActionListener(e -> {
             GameFrame.controller.getGamePanel().doUndo();
             if(!GameFrame.controller.getGamePanel().hasNextUndo()){
                 setUndoEnabled(false);
             }
         });
+        reverseX.addActionListener(e -> chessBoardPanel.flipX());
+        reverseY.addActionListener(e -> chessBoardPanel.flipY());
 
         gameMenu.addSeparator();
 
         JCheckBoxMenuItem cheatMode=new JCheckBoxMenuItem("Cheat mode");
+        JCheckBoxMenuItem AICheatMode=new JCheckBoxMenuItem("AI Cheat mode");
         gameMenu.add(cheatMode);
+        gameMenu.add(AICheatMode);
         cheatMode.addActionListener(e -> {
             System.out.println("Cheat mode "+ (cheat ? "off" : "on"));
             cheat=!cheat;
             controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
+            if(cheat) {
+                AICheatMode.setSelected(true);
+                AICheat = true;
+            }
 
             if(controller.getGamePanel().checkGray()){//没有灰色，跳过落子
                 controller.getGamePanel().doJump();
@@ -113,6 +126,7 @@ public class GameFrame extends JFrame {
                 a.start();//Run AI in thread
             }
         });
+        AICheatMode.addActionListener(e -> AICheat=!AICheat);
 
         JCheckBoxMenuItem AIMode=new JCheckBoxMenuItem("AI mode");
         AIMenu.add(AIMode);
@@ -138,9 +152,9 @@ public class GameFrame extends JFrame {
         AIMenu.add(AILevel5);
         AILevel1.addActionListener(e -> AI_Level=2);
         AILevel2.addActionListener(e -> AI_Level=4);
-        AILevel3.addActionListener(e -> AI_Level=6);
-        AILevel4.addActionListener(e -> AI_Level=8);
-        AILevel5.addActionListener(e -> AI_Level=10);
+        AILevel3.addActionListener(e -> AI_Level=8);
+        AILevel4.addActionListener(e -> AI_Level=10);
+        AILevel5.addActionListener(e -> AI_Level=12);
         ButtonGroup AILevel=new ButtonGroup();
         AILevel.add(AILevel1);
         AILevel.add(AILevel2);

@@ -5,6 +5,7 @@ import model.ChessPiece;
 import model.Step;
 import model.UndoList;
 import view.ChessBoardPanel;
+import view.GameFrame;
 
 import static view.ChessBoardPanel.CHESS_COUNT;
 
@@ -71,8 +72,8 @@ public class AI {
      * 所以只能搜索6~8步，也就3 4回合，
      * 搜索权值为棋盘权重
      *
-     * @param level AI等级，也就是搜索深度
      */
+    static int jp;
     public static void AIPlay(int level, ChessPiece currentPlayer) {
         panel.checkPlaceable(currentPlayer);
         ChessGridComponent[][] chessGrids = panel.getChessGrids();
@@ -85,6 +86,7 @@ public class AI {
             }
         }
         dx=dy=-1;
+        jp=0;
         int tmp = -(54 < u
                     ? think(u, 64 - u, currentPlayer, false, currentPlayer,-INF,INF)
                     : think(u, level, currentPlayer, true, currentPlayer,-INF,INF));
@@ -122,6 +124,7 @@ public class AI {
                 v=-think(depth+1,level-1,nCur,enableScore,AIPiece,-beta,-alpha);
 
                 panel.getUndoList().undo(chessGrids);
+                jp=0;
 
                 if(v>alpha){
                     if(v>beta){
@@ -138,12 +141,18 @@ public class AI {
                 }
             }
         }
+        if(max==-2147483647){
+            jp++;
+            if(jp==2) return evaluateBoard(AIPiece, currentPlayer, enableScore);
+            else max=-think(depth+1,level,nCur,enableScore,AIPiece,-beta,-alpha);
+        }
         dx=nx;dy=ny;
         return max;
     }
 
     private static boolean checkPlaceable(int i, int j, ChessPiece currentPlayer) {
         if(chessGrids[i][j].getChessPiece()==ChessPiece.BLACK || chessGrids[i][j].getChessPiece() == ChessPiece.WHITE) return false;
+        if(GameFrame.AICheat) return true;
         for(int T=0;T<8;T++){
             if(panel.canPut(i+ UndoList.xDirection[T],j+ UndoList.yDirection[T],T,currentPlayer,false)) return true;
         }

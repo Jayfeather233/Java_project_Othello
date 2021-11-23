@@ -271,4 +271,31 @@ public class ChessBoardPanel extends JPanel {
     public ChessGridComponent[][] getChessGrids() {
         return chessGrids;
     }
+
+
+    public void flipX() {
+        ChessPiece s;
+        for(int i=0;i<8;i++){
+            for(int j=0;j<4;j++){
+                s=chessGrids[i][j].getChessPiece();
+                chessGrids[i][j].setChessPiece(chessGrids[i][7-j].getChessPiece());
+                chessGrids[i][7-j].setChessPiece(s);
+            }
+        }
+        ChessGridComponent.setLast(ChessGridComponent.getLastRow(),7-ChessGridComponent.getLastCol());
+        repaint();
+    }
+
+    public void flipY() {
+        ChessPiece s;
+        for(int i=0;i<4;i++){
+            for(int j=0;j<8;j++){
+                s=chessGrids[i][j].getChessPiece();
+                chessGrids[i][j].setChessPiece(chessGrids[7-i][j].getChessPiece());
+                chessGrids[7-i][j].setChessPiece(s);
+            }
+        }
+        ChessGridComponent.setLast(7-ChessGridComponent.getLastRow(),ChessGridComponent.getLastCol());
+        repaint();
+    }
 }

@@ -95,6 +95,14 @@ public class ChessGridComponent extends BasicComponent {
         return col;
     }
 
+    public static int getLastCol() {
+        return lastCol;
+    }
+
+    public static int getLastRow() {
+        return lastRow;
+    }
+
     public void drawPiece(Graphics g) {
 
         if (this.chessPiece != null) {
