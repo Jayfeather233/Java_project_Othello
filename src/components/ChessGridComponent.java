@@ -67,6 +67,7 @@ public class ChessGridComponent extends BasicComponent {
                     Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece));
                     a.start();//Run AI in thread
                 }
+                GameFrame.setUndoEnabled(true);
             }else
                 System.out.println("Illegal in 2");
         }else

@@ -9,6 +9,8 @@ import model.ChessPiece;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -23,6 +25,7 @@ public class GameFrame extends JFrame {
     private static Image whiteChess;
     private static Image grayChess;
     private static Image panelImage;
+    private static JMenuItem undoMenuItem;
 
     public static Image getImage(ChessPiece u){
         if(u==ChessPiece.BLACK) return blackChess;
@@ -78,11 +81,18 @@ public class GameFrame extends JFrame {
             controller.getGamePanel().repaint();
             controller.getGamePanel().getUndoList().resetUndoList();
             chessBoardPanel.checkPlaceable(controller.getCurrentPlayer());
+            setUndoEnabled(false);
             statusPanel.repaint();
         });
-        JMenuItem undoMenuItem=new JMenuItem("Undo");
+        undoMenuItem=new JMenuItem("Undo");
+        setUndoEnabled(false);
         gameMenu.add(undoMenuItem);
-        undoMenuItem.addActionListener(e -> GameFrame.controller.getGamePanel().doUndo());
+        undoMenuItem.addActionListener(e -> {
+            GameFrame.controller.getGamePanel().doUndo();
+            if(!GameFrame.controller.getGamePanel().hasNextUndo()){
+                setUndoEnabled(false);
+            }
+        });
 
         gameMenu.addSeparator();
 
@@ -119,20 +129,24 @@ public class GameFrame extends JFrame {
         JRadioButtonMenuItem AILevel1=new JRadioButtonMenuItem("Easy");
         JRadioButtonMenuItem AILevel2=new JRadioButtonMenuItem("Normal");
         JRadioButtonMenuItem AILevel3=new JRadioButtonMenuItem("Hard");
-        JRadioButtonMenuItem AILevel4=new JRadioButtonMenuItem("Very Hard (May be Slow)");
+        JRadioButtonMenuItem AILevel4=new JRadioButtonMenuItem("Very Hard");
+        JRadioButtonMenuItem AILevel5=new JRadioButtonMenuItem("Very Slow Hard");
         AIMenu.add(AILevel1);
         AIMenu.add(AILevel2);
         AIMenu.add(AILevel3);
         AIMenu.add(AILevel4);
-        AILevel1.addActionListener(e -> AI_Level=1);
-        AILevel2.addActionListener(e -> AI_Level=2);
-        AILevel3.addActionListener(e -> AI_Level=4);
-        AILevel4.addActionListener(e -> AI_Level=6);
+        AIMenu.add(AILevel5);
+        AILevel1.addActionListener(e -> AI_Level=2);
+        AILevel2.addActionListener(e -> AI_Level=4);
+        AILevel3.addActionListener(e -> AI_Level=6);
+        AILevel4.addActionListener(e -> AI_Level=8);
+        AILevel5.addActionListener(e -> AI_Level=10);
         ButtonGroup AILevel=new ButtonGroup();
         AILevel.add(AILevel1);
         AILevel.add(AILevel2);
         AILevel.add(AILevel3);
         AILevel.add(AILevel4);
+        AILevel.add(AILevel5);
         AILevel1.setSelected(true);
         //菜单栏到此结束
 
@@ -164,6 +178,10 @@ public class GameFrame extends JFrame {
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+    }
+
+    public static void setUndoEnabled(boolean u){
+        undoMenuItem.setEnabled(u);
     }
 
     public static Image getPanelImage() {

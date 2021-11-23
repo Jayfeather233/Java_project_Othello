@@ -119,7 +119,7 @@ public class ChessBoardPanel extends JPanel {
      * @param ckOnly 如果为真是从一个放了棋的地方反推空地能不能放，并标记灰色
      *               如果为假是判断这个空地能不能放
      */
-    private boolean canPut(int dx, int dy, int T, ChessPiece currentPlayer, boolean ckOnly) {
+    public boolean canPut(int dx, int dy, int T, ChessPiece currentPlayer, boolean ckOnly) {
         int cnt=0;
         while(checkBounder(dx,dy)){
             if(chessGrids[dx][dy].getChessPiece()==null||chessGrids[dx][dy].getChessPiece()==ChessPiece.GRAY){
@@ -129,11 +129,12 @@ public class ChessBoardPanel extends JPanel {
                 if(ckOnly) {
                     chessGrids[dx][dy].setChessPiece(ChessPiece.GRAY);
                     return true;
-                }
-                else return false;
+                }else return false;
             }else if(chessGrids[dx][dy].getChessPiece()==currentPlayer){
                 if(ckOnly) break;
-                else return true;
+                else{
+                    return cnt != 0;
+                }
             }else{
                 cnt++;
             }

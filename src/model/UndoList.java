@@ -4,19 +4,6 @@ import components.ChessGridComponent;
 
 import java.util.ArrayList;
 
-class Step {
-    int rowIndex;
-    int columnIndex;
-    ChessPiece color;
-    int[] reserveNum;
-
-    public Step(int rowIndex,int columnIndex,ChessPiece color,int[] reserveNum){
-        this.rowIndex=rowIndex;
-        this.columnIndex=columnIndex;
-        this.color=color;
-        this.reserveNum=reserveNum;
-    }
-}
 public class UndoList {
     ArrayList<Step>stepList;
     private int[] tmp;
