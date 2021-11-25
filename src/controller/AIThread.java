@@ -20,3 +20,4 @@ public class AIThread implements Runnable{
         AI.AIPlay(lev,cur);
     }
 }
+

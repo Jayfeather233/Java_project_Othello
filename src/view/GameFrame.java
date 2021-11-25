@@ -2,8 +2,7 @@ package view;
 
 
 import components.ChessGridComponent;
-import controller.AIThread;
-import controller.GameController;
+import controller.*;
 import model.ChessPiece;
 
 import javax.imageio.ImageIO;
@@ -11,6 +10,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -18,6 +19,7 @@ public class GameFrame extends JFrame {
     public static GameController controller;
     private ChessBoardPanel chessBoardPanel;
     private StatusPanel statusPanel;
+    private BackGroundPanel backGroundPanel;
     public static boolean cheat=false,AICheat=false;
     public static ChessPiece AIPiece=null;
     public static int AI_Level=1;
@@ -25,6 +27,7 @@ public class GameFrame extends JFrame {
     private static Image whiteChess;
     private static Image grayChess;
     private static Image panelImage;
+    private static Image panelBackGroundImage;
     private static JMenuItem undoMenuItem;
 
     public static Image getImage(ChessPiece u){
@@ -38,11 +41,6 @@ public class GameFrame extends JFrame {
         this.setTitle("2021F CS102A Project Reversi");
         this.setLayout(null);
 
-        //获取窗口边框的长度，将这些值加到主窗口大小上，这能使窗口大小和预期相符
-        Insets inset = this.getInsets();
-        this.setSize(frameSize + inset.left + inset.right, frameSize + inset.top + inset.bottom);
-
-        this.setLocationRelativeTo(null);
 
 
         //创建菜单栏MenuBar
@@ -51,15 +49,24 @@ public class GameFrame extends JFrame {
         JMenu fileMenu=new JMenu("File");
         JMenu gameMenu=new JMenu("Game");
         JMenu AIMenu=new JMenu("vsAI");
+        JMenu panelMenu=new JMenu("Panel");
+
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        gameMenu.setMnemonic(KeyEvent.VK_G);
+        AIMenu.setMnemonic(KeyEvent.VK_A);
+        panelMenu.setMnemonic(KeyEvent.VK_P);
 
         menuBar.add(fileMenu);
         menuBar.add(gameMenu);
         menuBar.add(AIMenu);
+        menuBar.add(panelMenu);
 
         JMenuItem loadFileMenuItem=new JMenuItem("Load");
         JMenuItem saveFileMenuItem=new JMenuItem("Save");
         fileMenu.add(loadFileMenuItem);
         fileMenu.add(saveFileMenuItem);
+        loadFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
+        saveFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         loadFileMenuItem.addActionListener(e -> {
             System.out.println("clicked Load Btn");
             String filePath = JOptionPane.showInputDialog(this, "input the path here");
@@ -74,12 +81,17 @@ public class GameFrame extends JFrame {
 
         JMenuItem restartMenuItem=new JMenuItem("Restart");
         undoMenuItem=new JMenuItem("Undo");
+        JMenuItem surrenderMenuItem=new JMenuItem("Surrender");
         JMenuItem reverseX=new JMenuItem("Horizontal Flip");
         JMenuItem reverseY=new JMenuItem("Vertical Flip");
+
         gameMenu.add(restartMenuItem);
         gameMenu.add(undoMenuItem);
+        gameMenu.add(surrenderMenuItem);
         gameMenu.add(reverseX);
         gameMenu.add(reverseY);
+        restartMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,InputEvent.CTRL_DOWN_MASK));
+        undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,InputEvent.CTRL_DOWN_MASK));
 
         restartMenuItem.addActionListener(e -> {
             System.out.println(e);
@@ -97,6 +109,10 @@ public class GameFrame extends JFrame {
             if(!GameFrame.controller.getGamePanel().hasNextUndo()){
                 setUndoEnabled(false);
             }
+        });
+        surrenderMenuItem.addActionListener(e->{
+            JOptionPane.showMessageDialog(controller.getGamePanel(),(controller.getCurrentPlayer()==ChessPiece.WHITE ? "BLACK" : "WHITE") + " WINS!");
+            restartMenuItem.doClick();
         });
         reverseX.addActionListener(e -> chessBoardPanel.flipX());
         reverseY.addActionListener(e -> chessBoardPanel.flipY());
@@ -162,33 +178,61 @@ public class GameFrame extends JFrame {
         AILevel.add(AILevel4);
         AILevel.add(AILevel5);
         AILevel1.setSelected(true);
+
+        AIMenu.addSeparator();
+
+        JCheckBoxMenuItem AIPlay=new JCheckBoxMenuItem("AI play itself");
+        AIMenu.add(AIPlay);
+        AIPlay.addActionListener(e -> {
+            if(AIPlay.getState()) {
+                Thread a=new Thread(new TrainerThread());
+                a.start();
+            }
+        });
+
+
+        JMenuItem backColor=new JMenuItem("Choose background color");
+        JMenuItem panelColor=new JMenuItem("Choose status panel color");
+        panelMenu.add(backColor);
+        panelMenu.add(panelColor);
+        backColor.addActionListener(e-> this.getContentPane().setBackground(JColorChooser.showDialog(this,"Choose background color",Color.lightGray)));
+        panelColor.addActionListener(e-> statusPanel.setBackground(JColorChooser.showDialog(this,"Choose status panel color",Color.lightGray)));
+
         //菜单栏到此结束
+        //获取窗口边框的长度，将这些值加到主窗口大小上，这能使窗口大小和预期相符
+        Insets inset = this.getInsets();
+        this.setSize(frameSize + inset.left + inset.right, frameSize + inset.top + inset.bottom);
+
+
+        this.setLocationRelativeTo(null);
 
         try {
             blackChess= ImageIO.read(new File("resource\\black.png"));
             whiteChess= ImageIO.read(new File("resource\\white.png"));
             grayChess= ImageIO.read(new File("resource\\gray.png"));
             panelImage=ImageIO.read(new File("resource\\panel.png"));
-
+            panelBackGroundImage=ImageIO.read(new File("resource\\background.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
 
-        chessBoardPanel = new ChessBoardPanel((int) (this.getWidth() * 0.8), (int) (this.getHeight() * 0.7));
-        chessBoardPanel.setLocation((this.getWidth() - chessBoardPanel.getWidth()) / 2, (this.getHeight() - chessBoardPanel.getHeight()) / 3);
+        chessBoardPanel = new ChessBoardPanel((int) (this.getWidth() * 0.75), (int) (this.getHeight() * 0.75));
+        backGroundPanel=new BackGroundPanel();
+        statusPanel = new StatusPanel((int) (this.getWidth() * 0.7), (int) (this.getHeight() * 0.1));
 
-        statusPanel = new StatusPanel((int) (this.getWidth() * 0.8), (int) (this.getHeight() * 0.1));
-        statusPanel.setLocation((this.getWidth() - chessBoardPanel.getWidth()) / 2, 0);
         controller = new GameController(chessBoardPanel, statusPanel);
         controller.setGamePanel(chessBoardPanel);
         chessBoardPanel.checkPlaceable(controller.getCurrentPlayer());
 
         this.setJMenuBar(menuBar);
         this.add(chessBoardPanel);
+        this.add(backGroundPanel);
         this.add(statusPanel);
 
 
+        this.getContentPane().setBackground(new Color(17,17,17));
+        statusPanel.setBackground(new Color(30,30,30));
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -200,5 +244,25 @@ public class GameFrame extends JFrame {
 
     public static Image getPanelImage() {
         return panelImage;
+    }
+
+    public static Image getBackGroundImage() {
+        return panelBackGroundImage;
+    }
+
+    public void resize() {
+
+        int W=this.getContentPane().getWidth(),H=this.getContentPane().getHeight();
+        int M=Math.min(W,H-60);
+
+        statusPanel.setSize(W, 60);
+        statusPanel.setLocation(0, H-60);
+        statusPanel.reSize();
+
+        chessBoardPanel.reSize((int)(M*0.95), (int)(M*0.95));
+        chessBoardPanel.setLocation((W - chessBoardPanel.getWidth()) / 2, (int) (M * 0.025));
+
+        backGroundPanel.reSize(M, M);
+        backGroundPanel.setLocation((W - backGroundPanel.getWidth()) / 2, 0);
     }
 }

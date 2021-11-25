@@ -12,7 +12,6 @@ public class ChessGridComponent extends BasicComponent {
     public static int isRepainting=0;
     public static int chessSize;
     public static int gridSize;
-    public static Color gridColor = new Color(255, 150, 50);
     public static boolean AIOn;
 
     private static int lastRow=-1,lastCol=-1;
@@ -28,13 +27,17 @@ public class ChessGridComponent extends BasicComponent {
         this.col = col;
         this.chessPiece=null;
     }
+    public void resize(int size){
+        gridSize=size;
+        this.setSize(gridSize, gridSize);
+    }
 
     /**
      * 鼠标点击判断
      */
     @Override
     public void onMouseClicked() {
-        System.out.printf("%s clicked (%d, %d)", GameFrame.controller.getCurrentPlayer(), row, col);
+        //System.out.printf("%s clicked (%d, %d)", GameFrame.controller.getCurrentPlayer(), row, col);
         if (GameFrame.controller.canClick(row, col) && !AIOn) {
             if (this.chessPiece == null || this.chessPiece == ChessPiece.GRAY) {//合法落子
                 lastCol=col;
@@ -55,7 +58,6 @@ public class ChessGridComponent extends BasicComponent {
 
                 controller.swapPlayer();
                 panel.repaint();//重绘
-                System.out.println("Repaint");
 
 
                 if(panel.checkGray()){//没有灰色，跳过落子

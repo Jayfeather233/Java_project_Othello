@@ -10,6 +10,7 @@ import java.util.List;
 
 
 public class GameController {
+    public static int whoWin=0;//0:No 1:black 2:white 3:draw
 
 
     private ChessBoardPanel gamePanel;
@@ -34,7 +35,6 @@ public class GameController {
         this.currentPlayer = ChessPiece.BLACK;
         blackScore = 2;
         whiteScore = 2;
-        statusPanel.setPlayerText(currentPlayer.name());
         statusPanel.setScoreText(blackScore, whiteScore);
     }
 
@@ -43,8 +43,8 @@ public class GameController {
      */
     public void swapPlayer() {
         currentPlayer = (currentPlayer == ChessPiece.BLACK) ? ChessPiece.WHITE : ChessPiece.BLACK;
-        statusPanel.setPlayerText(currentPlayer.name());
         statusPanel.setScoreText(blackScore, whiteScore);
+        statusPanel.repaint();
         checkPlaceable(currentPlayer);//交换完后重新计算能下的位置
     }
 
@@ -125,7 +125,11 @@ public class GameController {
     }
 
     public void endGame() {
+        if(!Trainer.on)
         JOptionPane.showMessageDialog(gamePanel,(blackScore!=whiteScore)?((blackScore>whiteScore ? "BLACK" : "WHITE") + " WINS!") : "DRAW!");
+
+        whoWin=(blackScore!=whiteScore)?((blackScore>whiteScore ? 1 : 2)) : 3 ;
+
         GameFrame.controller.getGamePanel().initialGame();
         GameFrame.controller.resetScore();
         GameFrame.controller.getGamePanel().repaint();

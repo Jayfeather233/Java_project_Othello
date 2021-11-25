@@ -21,6 +21,9 @@ public class AI {
         AI.panel = panel;
         AI.chessGrids = panel.getChessGrids();
     }
+    public static void setPanelScore(int[][] ps){
+        panelScore=ps;
+    }
     public static void advantageMove(int u,int depth,int index){
         if(index==0) return;
         Step v=history[u][depth][index];
@@ -37,8 +40,8 @@ public class AI {
 
     public static void initScore() {
         panelScore = new int[9][9];
-        history=new Step[2][70][64];
-        for (int i = 0; i < 70; i++) {
+        history=new Step[2][130][64];
+        for (int i = 0; i < 130; i++) {
             for (int j = 0; j < 64; j++) {
                 history[0][i][j] = new Step(j / 8, j % 8, ChessPiece.BLACK, null);
                 history[1][i][j] = new Step(j / 8, j % 8, ChessPiece.BLACK, null);
@@ -50,13 +53,13 @@ public class AI {
                 if(i*(7-i)==0&&j*(7-j)==0)//在角
                     panelScore[i][j]=64;
                 else if((i<=1||i>=6)&&(j<=1||j>=6))//在角四周
-                    panelScore[i][j]=0;
+                    panelScore[i][j]=1;
                 else if((i-1)*(j-1)*(6-i)*(6-j)==0)//在第二行
-                    panelScore[i][j]=4;
+                    panelScore[i][j]=5;
                 else if(i*j*(7-i)*(7-j)==0)//在边
-                    panelScore[i][j]=6;
+                    panelScore[i][j]=8;
                 else//在中间
-                    panelScore[i][j]=2;
+                    panelScore[i][j]=3;
             }
         }
     }
@@ -87,17 +90,17 @@ public class AI {
         }
         dx=dy=-1;
         jp=0;
-        int tmp = -(54 < u
-                    ? think(u, 64 - u, currentPlayer, false, currentPlayer,-INF,INF)
-                    : think(u, level, currentPlayer, true, currentPlayer,-INF,INF));
+        int tmp = -(50 < u
+                    ? think(u, 84 - u, currentPlayer, false, false, currentPlayer,-INF,INF)
+                    : think(u, level, currentPlayer, true, true, currentPlayer,-INF,INF));
 
         ChessGridComponent.AIOn = false;
-        System.out.println("AIOn=false\n");
+        //System.out.println("AIOn=false\n");
         panel.checkPlaceable(currentPlayer);
         if (dx == -1) {
             panel.doJump();
         } else {
-            System.out.printf("AI play at %d,%d\n", dx, dy);
+            //System.out.printf("AI play at %d,%d\n", dx, dy);
             chessGrids[dx][dy].onMouseClicked();
         }
     }
@@ -105,11 +108,11 @@ public class AI {
     /**
      * 这里就是递归搜索
      */
-    private static int think(int depth, int level, ChessPiece currentPlayer, boolean enableScore, ChessPiece AIPiece,int alpha,int beta) {
+    private static int think(int depth, int level, ChessPiece currentPlayer, boolean enableScore, boolean enableMove, ChessPiece AIPiece,int alpha,int beta) {
 
         int max=-2147483647;
         if (level == 0){
-            return evaluateBoard(AIPiece, currentPlayer, enableScore);
+            return evaluateBoard(AIPiece, currentPlayer, enableScore, enableMove);
         }
         int nn = currentPlayer == ChessPiece.BLACK ? 1 : 0, v;
         int nx=-1,ny = -1;
@@ -121,7 +124,7 @@ public class AI {
                 panel.doMove(i,j,currentPlayer);
                 panel.getUndoList().add(i, j, currentPlayer);
 
-                v=-think(depth+1,level-1,nCur,enableScore,AIPiece,-beta,-alpha);
+                v=-think(depth+1,level-1,nCur,enableScore,enableMove,AIPiece,-beta,-alpha);
 
                 panel.getUndoList().undo(chessGrids);
                 jp=0;
@@ -143,8 +146,8 @@ public class AI {
         }
         if(max==-2147483647){
             jp++;
-            if(jp==2) return evaluateBoard(AIPiece, currentPlayer, enableScore);
-            else max=-think(depth+1,level,nCur,enableScore,AIPiece,-beta,-alpha);
+            if(jp==2) return evaluateBoard(AIPiece, currentPlayer, enableScore, enableMove);
+            else max=-think(depth+1,level,nCur,enableScore,enableMove,AIPiece,-beta,-alpha);
         }
         dx=nx;dy=ny;
         return max;
@@ -159,7 +162,7 @@ public class AI {
         return false;
     }
 
-    private static int evaluateBoard(ChessPiece AIPiece, ChessPiece currentPlayer, boolean enableScore) {
+    private static int evaluateBoard(ChessPiece AIPiece, ChessPiece currentPlayer, boolean enableScore, boolean enableMove) {
         int dif = 0;
 
         for (int i = 0; i < CHESS_COUNT; i++) {
@@ -173,7 +176,7 @@ public class AI {
                 }
             }
         }
-        if (enableScore) {
+        if (enableMove) {
             if (AIPiece == currentPlayer) {
                 dif += panel.countGray() * 5;
                 panel.checkPlaceable(AIPiece == ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);

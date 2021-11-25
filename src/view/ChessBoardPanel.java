@@ -3,6 +3,7 @@ package view;
 import components.ChessGridComponent;
 import controller.AI;
 import controller.GameController;
+import controller.Trainer;
 import model.ChessPiece;
 import model.UndoList;
 
@@ -75,7 +76,6 @@ public class ChessBoardPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         g.drawImage(GameFrame.getPanelImage(),0, 0, this.getWidth(), this.getHeight(),null);
     }
 
@@ -181,11 +181,13 @@ public class ChessBoardPanel extends JPanel {
 
 
     public void doJump() {
+        if(!Trainer.on)
         JOptionPane.showMessageDialog(GameFrame.controller.getGamePanel(),
                 (GameFrame.controller.getCurrentPlayer() == ChessPiece.BLACK ? "BLACK" : "WHITE") +
                         " has nowhere to put! JumpThrough.");
         GameFrame.controller.jumpThrough();
         if(GameFrame.controller.getGamePanel().checkGray()) {//连续判断
+            if(!Trainer.on)
             JOptionPane.showMessageDialog(GameFrame.controller.getGamePanel(),
                     (GameFrame.controller.getCurrentPlayer() == ChessPiece.BLACK ? "BLACK" : "WHITE") +
                             " has nowhere to put! JumpThrough.");
@@ -297,5 +299,19 @@ public class ChessBoardPanel extends JPanel {
         }
         ChessGridComponent.setLast(7-ChessGridComponent.getLastRow(),ChessGridComponent.getLastCol());
         repaint();
+    }
+
+    public void reSize(int width, int height) {
+        int length = Math.min(width, height);
+        this.setSize(length, length);
+        ChessGridComponent.gridSize = (int)((length+0.5) / CHESS_COUNT);
+        ChessGridComponent.chessSize = (int) (ChessGridComponent.gridSize * 0.8);
+
+        for(int i=0;i<CHESS_COUNT;i++){
+            for(int j=0;j<CHESS_COUNT;j++){
+                chessGrids[i][j].resize(ChessGridComponent.gridSize);
+                chessGrids[i][j].setLocation(j * ChessGridComponent.gridSize, i * ChessGridComponent.gridSize);
+            }
+        }
     }
 }
