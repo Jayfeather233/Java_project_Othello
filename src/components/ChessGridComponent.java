@@ -126,7 +126,7 @@ public class ChessGridComponent extends BasicComponent {
                 u=lasT;
             }
 
-            if(isFlip==1) {
+            if(isFlip==1 && GameFrame.animation) {
                 if (u < lasT / 2) {
 
                     int dx=(int) (8 * u * 2.0 / lasT+0.5);
@@ -166,7 +166,7 @@ public class ChessGridComponent extends BasicComponent {
                             (gridSize + cx) / 2 - cx2, (gridSize - cy) / 2,
                             cx2, cy, null);
                 }
-            }else if(isFlip!=0){
+            }else if(isFlip!=0 && GameFrame.animation){
                 g.drawImage(GameFrame.getImage(this.chessPiece),
                         (int) (gridSize - chessSize - (lasT - u) * 15 / lasT) / 2, (int) (gridSize - chessSize - (lasT - u) * 15 / lasT) / 2,
                         (int) (chessSize + (lasT - u) * 15 / lasT), (int) (chessSize + (lasT - u) * 15 / lasT), null);
