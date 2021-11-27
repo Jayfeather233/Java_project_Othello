@@ -29,6 +29,10 @@ public class AI {
     public static void setPanelScore(int[][] ps){
         panelScore=ps;
     }
+
+    /**
+     * 历史表的两个操作
+     */
     public static void advantageMove(int u,int depth,int index){
         if(index==0) return;
         Step v=history[u][depth][index];
@@ -41,6 +45,9 @@ public class AI {
         history[u][depth][0]=s;
     }
 
+    /**
+     * 初始化棋盘权值和历史表
+     */
     public static void initScore() {
         panelScore = new int[9][9];
         history=new Step[2][130][64];
@@ -70,7 +77,6 @@ public class AI {
     /**
      * AI调用入口，函数结束会调用某个格子的onMouseClicked来模拟点击
      * AI实现方法为最小最大博弈，加alpha-beta剪枝和历史表
-     *
      */
     static int jp;
     public static void AIPlay(int level, ChessPiece currentPlayer) {
@@ -161,6 +167,9 @@ public class AI {
         return false;
     }
 
+    /**
+     * 计算棋盘整体得分
+     */
     private static int evaluateBoard(ChessPiece AIPiece, ChessPiece currentPlayer, boolean enableScore, boolean enableMove) {
         int dif = 0;
 

@@ -44,33 +44,33 @@ public class ChessGridComponent extends BasicComponent {
         //System.out.printf("%s clicked (%d, %d)", GameFrame.controller.getCurrentPlayer(), row, col);
         if (GameFrame.controller.canClick(row, col) && !AIOn) {
             if (this.chessPiece == null || this.chessPiece == ChessPiece.GRAY) {//合法落子
-                lastCol=col;
-                lastRow=row;
-                GameController controller=GameFrame.controller;
-                ChessBoardPanel panel=GameFrame.controller.getGamePanel();
+                lastCol = col;
+                lastRow = row;
+                GameController controller = GameFrame.controller;
+                ChessBoardPanel panel = GameFrame.controller.getGamePanel();
 
 
-                int u=panel.doMove(row,col,controller.getCurrentPlayer(),null);//doMove
+                int u = panel.doMove(row, col, controller.getCurrentPlayer(), null);//doMove
 
-                controller.countScore(controller.getCurrentPlayer(),u);//countScore plus
-                controller.jumpTime=0;
+                controller.countScore(controller.getCurrentPlayer(), u);//countScore plus
+                controller.jumpTime = 0;
                 controller.countScore(
-                        controller.getCurrentPlayer()==ChessPiece.BLACK ?
-                                ChessPiece.WHITE : ChessPiece.BLACK,-u+1);//countScore minus
+                        controller.getCurrentPlayer() == ChessPiece.BLACK ?
+                                ChessPiece.WHITE : ChessPiece.BLACK, -u + 1);//countScore minus
 
-                panel.addUndo(row,col,controller.getCurrentPlayer());//add Undo
+                panel.addUndo(row, col, controller.getCurrentPlayer());//add Undo
 
                 controller.swapPlayer();
                 panel.repaint();//重绘
 
 
-                if(panel.checkGray()){//没有灰色，跳过落子
+                if (panel.checkGray()) {//没有灰色，跳过落子
                     panel.doJump();
                 }
 
-                if(GameFrame.AIPiece==controller.getCurrentPlayer()){//如果开启AI就让AI跑下一步
-                    AIOn=true;
-                    Thread a=new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece));
+                if (GameFrame.AIPiece == controller.getCurrentPlayer()) {//如果开启AI就让AI跑下一步
+                    AIOn = true;
+                    Thread a = new Thread(new AIThread(GameFrame.AI_Level, GameFrame.AIPiece));
                     a.start();//Run AI in thread
                 }
                 GameFrame.setUndoEnabled(true);
@@ -86,6 +86,9 @@ public class ChessGridComponent extends BasicComponent {
         return chessPiece;
     }
 
+    /**
+     * 棋子状态改变，动画开始
+     */
     public void setChessPiece(ChessPiece chessPiece) {
         if(chessPiece!=ChessPiece.GRAY) {
             if (this.chessPiece != null && this.chessPiece != ChessPiece.GRAY) isFlip = 1;
@@ -126,6 +129,9 @@ public class ChessGridComponent extends BasicComponent {
                 u=lasT;
             }
 
+            /*
+            这里处理动画
+             */
             if(isFlip==1 && GameFrame.animation) {
                 if (u < lasT / 2) {
 

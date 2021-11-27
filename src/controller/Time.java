@@ -2,6 +2,9 @@ package controller;
 
 import view.GameFrame;
 
+/**
+ * 一个简单计时器，毫秒为单位，用于计算动画
+ */
 public class Time implements Runnable {
 
     private static long time;

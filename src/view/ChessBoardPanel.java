@@ -202,6 +202,9 @@ public class ChessBoardPanel extends JPanel {
     }
 
 
+    /**
+     * 计算可下位置数、
+     */
     public int countGray() {
         int u=0;
         for (int i = 0; i < CHESS_COUNT; i++) {
@@ -279,6 +282,9 @@ public class ChessBoardPanel extends JPanel {
     }
 
 
+    /**
+     * XY轴翻转
+     */
     public void flipX() {
         ChessPiece s;
         for(int i=0;i<8;i++){
@@ -305,6 +311,9 @@ public class ChessBoardPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * 对棋盘大小重设
+     */
     public void reSize(int width, int height) {
         int length = Math.min(width, height);
         this.setSize(length, length);

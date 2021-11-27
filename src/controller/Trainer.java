@@ -2,6 +2,10 @@ package controller;
 
 import view.GameFrame;
 
+/**
+ * AI自我对下来判断两个权值表谁更好
+ * 正常运行时不应执行这些代码
+ */
 public class Trainer {
     public static boolean on=false;
 
@@ -45,7 +49,7 @@ public class Trainer {
                     switch (GameController.whoWin){
                         case 1:scoreS[i]++;break;
                         case 2:scoreS[j]++;break;
-                        default:;
+                        default:
                     }
                     GameController.whoWin=0;
                 }
@@ -62,7 +66,7 @@ public class Trainer {
                 for (int j = 0; j < 8; j++) {
                     System.out.printf("%d ",score[maxp][i][j]);
                 }
-                System.out.println("");
+                System.out.print('\n');
             }
 
             T++;
