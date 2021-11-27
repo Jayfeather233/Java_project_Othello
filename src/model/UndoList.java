@@ -5,7 +5,7 @@ import components.ChessGridComponent;
 import java.util.ArrayList;
 
 public class UndoList {
-    ArrayList<Step>stepList;
+    public ArrayList<Step>stepList;
     private int[] tmp;
     public static int[] xDirection;
     public static int[] yDirection;
@@ -58,9 +58,6 @@ public class UndoList {
             }
         }
         chessGrids[u.rowIndex][u.columnIndex].setChessPiece(null);
-
-        if(stepList.size()!=0) ChessGridComponent.setLast(stepList.get(stepList.size()-1).rowIndex,stepList.get(stepList.size()-1).columnIndex);//设置上一个落子点（红）
-        else ChessGridComponent.setLast(0,0);
 
         return t;
     }

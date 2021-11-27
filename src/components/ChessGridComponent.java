@@ -1,12 +1,14 @@
 package components;
 
 import controller.GameController;
+import controller.Time;
 import model.*;
 import controller.AIThread;
 import view.ChessBoardPanel;
 import view.GameFrame;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class ChessGridComponent extends BasicComponent {
     public static int isRepainting=0;
@@ -19,6 +21,8 @@ public class ChessGridComponent extends BasicComponent {
     private ChessPiece chessPiece;
     private final int row;
     private final int col;
+    private long lasTime;
+    private int isFlip=0;//1 flip
 
     public ChessGridComponent(int row, int col) {
         this.setSize(gridSize, gridSize);
@@ -46,7 +50,7 @@ public class ChessGridComponent extends BasicComponent {
                 ChessBoardPanel panel=GameFrame.controller.getGamePanel();
 
 
-                int u=panel.doMove(row,col,controller.getCurrentPlayer());//doMove
+                int u=panel.doMove(row,col,controller.getCurrentPlayer(),null);//doMove
 
                 controller.countScore(controller.getCurrentPlayer(),u);//countScore plus
                 controller.jumpTime=0;
@@ -72,8 +76,9 @@ public class ChessGridComponent extends BasicComponent {
                 GameFrame.setUndoEnabled(true);
             }else
                 System.out.println("Illegal in 2");
-        }else
-            System.out.printf("Illegal in 1,AIOn=%d\n",AIOn ? 1 : 0);
+        }else {
+            System.out.printf("Illegal in 1,AIOn=%d\n", AIOn ? 1 : 0);
+        }
     }
 
 
@@ -82,6 +87,11 @@ public class ChessGridComponent extends BasicComponent {
     }
 
     public void setChessPiece(ChessPiece chessPiece) {
+        if(chessPiece!=ChessPiece.GRAY) {
+            if (this.chessPiece != null && this.chessPiece != ChessPiece.GRAY) isFlip = 1;
+            else isFlip = 2;
+            lasTime= Time.getTime();
+        } else isFlip=0;
         this.chessPiece = chessPiece;
     }
 
@@ -109,7 +119,62 @@ public class ChessGridComponent extends BasicComponent {
 
         if (this.chessPiece != null) {
 
-            g.drawImage(GameFrame.getImage(this.chessPiece),(gridSize - chessSize) / 2, (gridSize - chessSize) / 2, chessSize, chessSize,null);
+            long u=Time.getTime()-lasTime;
+            long lasT=250;
+            if(u>lasT){
+                isFlip=0;
+                u=lasT;
+            }
+
+            if(isFlip==1) {
+                if (u < lasT / 2) {
+
+                    int dx=(int) (8 * u * 2.0 / lasT+0.5);
+                    int cx=(int) (chessSize * (1 - u * 2.0 / lasT)+0.5) + dx * 2;
+                    int cy=(int) (chessSize + u * 30 / lasT);
+
+                    BufferedImage bi= (BufferedImage) GameFrame.getImage(this.chessPiece);
+                    if(u!=0) bi=bi.getSubimage(0,0,(int) (bi.getWidth() * (u * 1.0 / lasT) + 0.5), bi.getHeight());
+                    else bi=null;
+
+                    int cx2=(int) (cx * (u * 1.0 / lasT) + 0.5);
+
+                    g.drawImage(GameFrame.getImage(this.chessPiece == ChessPiece.WHITE ? ChessPiece.BLACK : ChessPiece.WHITE),
+                            (gridSize - cx) / 2, (gridSize - cy) / 2,
+                            cx, cy, null);
+                    g.drawImage(bi,
+                            (gridSize - cx) / 2, (gridSize - cy) / 2,
+                            cx2, cy, null);
+
+                } else {
+
+                    int dx=(int) (8 * (lasT - u) * 2.0 / lasT+0.5);
+                    int cx=(int) (chessSize * (u * 2.0 / lasT - 1)+0.5) + dx * 2;
+                    int cy=(int) (chessSize + (lasT - u) * 30 / lasT);
+
+                    BufferedImage bi= (BufferedImage) GameFrame.getImage(this.chessPiece == ChessPiece.WHITE ? ChessPiece.BLACK : ChessPiece.WHITE);
+                    if(u<lasT) bi=bi.getSubimage((int) (bi.getWidth() * (u * 1.0 / lasT) + 0.5),0,
+                            (int) (bi.getWidth() * (1 - u * 1.0 / lasT) + 0.5), bi.getHeight());
+                    else bi=null;
+
+                    int cx2=(int) (cx * (1 - u * 1.0 / lasT) + 0.5);
+
+                    g.drawImage(GameFrame.getImage(this.chessPiece),
+                            (gridSize - cx) / 2, (gridSize - cy) / 2,
+                            cx, cy, null);
+                    g.drawImage(bi,
+                            (gridSize + cx) / 2 - cx2, (gridSize - cy) / 2,
+                            cx2, cy, null);
+                }
+            }else if(isFlip!=0){
+                g.drawImage(GameFrame.getImage(this.chessPiece),
+                        (int) (gridSize - chessSize - (lasT - u) * 15 / lasT) / 2, (int) (gridSize - chessSize - (lasT - u) * 15 / lasT) / 2,
+                        (int) (chessSize + (lasT - u) * 15 / lasT), (int) (chessSize + (lasT - u) * 15 / lasT), null);
+            }else {
+                g.drawImage(GameFrame.getImage(this.chessPiece),
+                        (gridSize - chessSize) / 2, (gridSize - chessSize) / 2,
+                        chessSize, chessSize, null);
+            }
 
             if(col==lastCol&&row==lastRow) {//最后一子突出显示
                 g.setColor(Color.RED);
@@ -126,6 +191,5 @@ public class ChessGridComponent extends BasicComponent {
         drawPiece(g);
         isRepainting--;
     }
-
 
 }

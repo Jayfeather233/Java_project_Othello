@@ -4,6 +4,8 @@ package view;
 import components.ChessGridComponent;
 import controller.*;
 import model.ChessPiece;
+import model.Step;
+import model.UndoList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -14,9 +16,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class GameFrame extends JFrame {
     public static GameController controller;
+    public static boolean animation=true;
     private ChessBoardPanel chessBoardPanel;
     private StatusPanel statusPanel;
     private BackGroundPanel backGroundPanel;
@@ -99,7 +103,7 @@ public class GameFrame extends JFrame {
             controller.resetScore();
             controller.getGamePanel().repaint();
             controller.getGamePanel().getUndoList().resetUndoList();
-            chessBoardPanel.checkPlaceable(controller.getCurrentPlayer());
+            chessBoardPanel.checkPlaceable(controller.getCurrentPlayer(),null);
             setUndoEnabled(false);
             statusPanel.repaint();
         });
@@ -109,6 +113,9 @@ public class GameFrame extends JFrame {
             if(!GameFrame.controller.getGamePanel().hasNextUndo()){
                 setUndoEnabled(false);
             }
+            UndoList uu=controller.getGamePanel().undoList;
+            if(uu.stepList.size()!=0) ChessGridComponent.setLast(uu.stepList.get(uu.stepList.size()-1).rowIndex,uu.stepList.get(uu.stepList.size()-1).columnIndex);//设置上一个落子点（红）
+            else ChessGridComponent.setLast(0,0);
         });
         surrenderMenuItem.addActionListener(e->{
             JOptionPane.showMessageDialog(controller.getGamePanel(),(controller.getCurrentPlayer()==ChessPiece.WHITE ? "BLACK" : "WHITE") + " WINS!");
@@ -126,7 +133,7 @@ public class GameFrame extends JFrame {
         cheatMode.addActionListener(e -> {
             System.out.println("Cheat mode "+ (cheat ? "off" : "on"));
             cheat=!cheat;
-            controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
+            controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer(),null);
             if(cheat) {
                 AICheatMode.setSelected(true);
                 AICheat = true;
@@ -182,7 +189,7 @@ public class GameFrame extends JFrame {
         AIMenu.addSeparator();
 
         JCheckBoxMenuItem AIPlay=new JCheckBoxMenuItem("AI play itself");
-        AIMenu.add(AIPlay);
+        //AIMenu.add(AIPlay);
         AIPlay.addActionListener(e -> {
             if(AIPlay.getState()) {
                 Thread a=new Thread(new TrainerThread());
@@ -190,6 +197,12 @@ public class GameFrame extends JFrame {
             }
         });
 
+
+        JCheckBoxMenuItem animate=new JCheckBoxMenuItem("Enable animation");
+        panelMenu.add(animate);
+        panelMenu.addSeparator();
+        animate.addActionListener(e -> animation=animate.getState());
+        animate.setSelected(true);
 
         JMenuItem backColor=new JMenuItem("Choose background color");
         JMenuItem panelColor=new JMenuItem("Choose status panel color");
@@ -223,7 +236,7 @@ public class GameFrame extends JFrame {
 
         controller = new GameController(chessBoardPanel, statusPanel);
         controller.setGamePanel(chessBoardPanel);
-        chessBoardPanel.checkPlaceable(controller.getCurrentPlayer());
+        chessBoardPanel.checkPlaceable(controller.getCurrentPlayer(),null);
 
         this.setJMenuBar(menuBar);
         this.add(chessBoardPanel);
@@ -236,6 +249,7 @@ public class GameFrame extends JFrame {
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        new Thread(new Time()).start();
     }
 
     public static void setUndoEnabled(boolean u){

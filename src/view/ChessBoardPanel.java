@@ -91,7 +91,8 @@ public class ChessBoardPanel extends JPanel {
      * 用灰色列举出当前玩家能放的位置
      * @param currentPlayer 当前玩家颜色
      */
-    public void checkPlaceable(ChessPiece currentPlayer) {
+    public void checkPlaceable(ChessPiece currentPlayer,ChessGridComponent[][] chessGrids) {
+        if(chessGrids==null) chessGrids=this.chessGrids;
         for (int i = 0; i < CHESS_COUNT; i++) {//首先清除棋盘上灰色，因为我们要重新生成它
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if (chessGrids[i][j].getChessPiece() == ChessPiece.GRAY)
@@ -101,7 +102,7 @@ public class ChessBoardPanel extends JPanel {
         for (int i = 0; i < CHESS_COUNT; i++) {//对每一个有棋子的点从它向8个方向扩展找哪里可放
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if(chessGrids[i][j].getChessPiece()==currentPlayer) {
-                    findPut(i,j,currentPlayer);
+                    findPut(i,j,currentPlayer,chessGrids);
                 }
             }
         }
@@ -119,7 +120,8 @@ public class ChessBoardPanel extends JPanel {
      * @param ckOnly 如果为真是从一个放了棋的地方反推空地能不能放，并标记灰色
      *               如果为假是判断这个空地能不能放
      */
-    public boolean canPut(int dx, int dy, int T, ChessPiece currentPlayer, boolean ckOnly) {
+    public boolean canPut(int dx, int dy, int T, ChessPiece currentPlayer, boolean ckOnly, ChessGridComponent[][] chessGrids) {
+        if(chessGrids==null) chessGrids=this.chessGrids;
         int cnt=0;
         while(checkBounder(dx,dy)){
             if(chessGrids[dx][dy].getChessPiece()==null||chessGrids[dx][dy].getChessPiece()==ChessPiece.GRAY){
@@ -147,11 +149,12 @@ public class ChessBoardPanel extends JPanel {
     /**
      * 从checkPlaceable里面分出来的，表示找某个特定点8方向上哪里能放
      */
-    private void findPut(int row, int col, ChessPiece currentPlayer) {
+
+    private void findPut(int row, int col, ChessPiece currentPlayer, ChessGridComponent[][] chessGrids) {
         for(int T=0;T<UndoList.directionCounter;T++){
             int dx=row+UndoList.xDirection[T];
             int dy=col+UndoList.yDirection[T];
-            canPut(dx,dy,T,currentPlayer,true);
+            canPut(dx,dy,T,currentPlayer,true,chessGrids);
         }
     }
 
@@ -159,13 +162,14 @@ public class ChessBoardPanel extends JPanel {
      * 真正下子下去
      * @return 下这一步共增加几个子
      */
-    public int doMove(int row, int col, ChessPiece currentPlayer) {
+    public int doMove(int row, int col, ChessPiece currentPlayer, ChessGridComponent[][] chessGrids) {
+        if(chessGrids==null) chessGrids=this.chessGrids;
         int t=0;
         for(int T=0;T<UndoList.directionCounter;T++){
             int dx=row+UndoList.xDirection[T];
             int dy=col+UndoList.yDirection[T];
             undoList.setReserveNum(T,0);
-            if(canPut(dx,dy,T,currentPlayer,false)){
+            if(canPut(dx,dy,T,currentPlayer,false,chessGrids)){
                 while(chessGrids[dx][dy].getChessPiece()!=currentPlayer){
                     chessGrids[dx][dy].setChessPiece(currentPlayer);
                     t++;
@@ -193,7 +197,7 @@ public class ChessBoardPanel extends JPanel {
                             " has nowhere to put! JumpThrough.");
             GameFrame.controller.jumpThrough();
         }
-        checkPlaceable(GameFrame.controller.getCurrentPlayer());
+        checkPlaceable(GameFrame.controller.getCurrentPlayer(),null);
         repaint();
     }
 
@@ -266,7 +270,7 @@ public class ChessBoardPanel extends JPanel {
         if(cur!=controller.getCurrentPlayer())
             controller.swapPlayer();
         else
-            controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer());
+            controller.getGamePanel().checkPlaceable(controller.getCurrentPlayer(),null);
         System.out.println(u);
     }
 

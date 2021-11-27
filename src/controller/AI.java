@@ -18,8 +18,13 @@ public class AI {
     public static int dx,dy;
 
     public static void setPanel(ChessBoardPanel panel) {
+        chessGrids=new ChessGridComponent[8][8];
+        for(int i=0;i<8;i++) {
+            for (int j = 0; j < 8; j++) {
+                chessGrids[i][j]=new ChessGridComponent(i,j);
+            }
+        }
         AI.panel = panel;
-        AI.chessGrids = panel.getChessGrids();
     }
     public static void setPanelScore(int[][] ps){
         panelScore=ps;
@@ -32,9 +37,7 @@ public class AI {
     }
     private static void floatMove(int u,int depth,int index){
         Step s=history[u][depth][index];
-        for(int i=index-1;i>=0;i--){
-            history[u][depth][i+1]=history[u][depth][i];
-        }
+        System.arraycopy(history[u][depth], 0, history[u][depth], 1, index - 1 + 1);
         history[u][depth][0]=s;
     }
 
@@ -66,20 +69,16 @@ public class AI {
 
     /**
      * AI调用入口，函数结束会调用某个格子的onMouseClicked来模拟点击
-     * AI思路：遍历所有能下的点，假如我下这里，那么搜索下一个玩家继续移动最优的值，找到这个值的最小，就是我们移动的地方
-     * 值：指与对家的得分之差
-     * 最优：指机器认为最优，也就是与对家得分之差最大
-     * <p>
-     * 这个方法的问题在于，因为搜索本身限制，一次递归需遍历64个点，最多时进入10个递归
-     * 搜索n次则复杂度 O(64*10^n)
-     * 所以只能搜索6~8步，也就3 4回合，
-     * 搜索权值为棋盘权重
+     * AI实现方法为最小最大博弈，加alpha-beta剪枝和历史表
      *
      */
     static int jp;
     public static void AIPlay(int level, ChessPiece currentPlayer) {
-        panel.checkPlaceable(currentPlayer);
-        ChessGridComponent[][] chessGrids = panel.getChessGrids();
+        for(int i=0;i<8;i++) {
+            for(int j=0;j<8;j++) {
+                chessGrids[i][j].setChessPiece(panel.getChessGrids()[i][j].getChessPiece());
+            }
+        }
         int u = 0;
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
@@ -96,13 +95,13 @@ public class AI {
 
         ChessGridComponent.AIOn = false;
         //System.out.println("AIOn=false\n");
-        panel.checkPlaceable(currentPlayer);
         if (dx == -1) {
             panel.doJump();
         } else {
-            //System.out.printf("AI play at %d,%d\n", dx, dy);
-            chessGrids[dx][dy].onMouseClicked();
+            System.out.printf("AI play at %d,%d\n", dx, dy);
+            panel.getChessGrids()[dx][dy].onMouseClicked();
         }
+
     }
 
     /**
@@ -121,7 +120,7 @@ public class AI {
             Step s = history[nn][depth][T];
             int i = s.rowIndex, j = s.columnIndex;
             if (checkPlaceable(i,j,currentPlayer)) {
-                panel.doMove(i,j,currentPlayer);
+                panel.doMove(i,j,currentPlayer,chessGrids);
                 panel.getUndoList().add(i, j, currentPlayer);
 
                 v=-think(depth+1,level-1,nCur,enableScore,enableMove,AIPiece,-beta,-alpha);
@@ -157,7 +156,7 @@ public class AI {
         if(chessGrids[i][j].getChessPiece()==ChessPiece.BLACK || chessGrids[i][j].getChessPiece() == ChessPiece.WHITE) return false;
         if(GameFrame.AICheat) return true;
         for(int T=0;T<8;T++){
-            if(panel.canPut(i+ UndoList.xDirection[T],j+ UndoList.yDirection[T],T,currentPlayer,false)) return true;
+            if(panel.canPut(i+ UndoList.xDirection[T],j+ UndoList.yDirection[T],T,currentPlayer,false,chessGrids)) return true;
         }
         return false;
     }
@@ -165,6 +164,7 @@ public class AI {
     private static int evaluateBoard(ChessPiece AIPiece, ChessPiece currentPlayer, boolean enableScore, boolean enableMove) {
         int dif = 0;
 
+        panel.checkPlaceable(currentPlayer,chessGrids);
         for (int i = 0; i < CHESS_COUNT; i++) {
             for (int j = 0; j < CHESS_COUNT; j++) {
                 if (chessGrids[i][j].getChessPiece() == AIPiece) {
@@ -179,11 +179,11 @@ public class AI {
         if (enableMove) {
             if (AIPiece == currentPlayer) {
                 dif += panel.countGray() * 5;
-                panel.checkPlaceable(AIPiece == ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK);
+                panel.checkPlaceable(AIPiece == ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK,chessGrids);
                 dif -= panel.countGray() * 5;
             } else {
                 dif -= panel.countGray() * 5;
-                panel.checkPlaceable(AIPiece);
+                panel.checkPlaceable(AIPiece,chessGrids);
                 dif += panel.countGray() * 5;
             }
         }

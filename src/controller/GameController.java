@@ -45,7 +45,7 @@ public class GameController {
         currentPlayer = (currentPlayer == ChessPiece.BLACK) ? ChessPiece.WHITE : ChessPiece.BLACK;
         statusPanel.setScoreText(blackScore, whiteScore);
         statusPanel.repaint();
-        checkPlaceable(currentPlayer);//交换完后重新计算能下的位置
+        gamePanel.checkPlaceable(currentPlayer,null);
     }
 
 
@@ -105,13 +105,6 @@ public class GameController {
     }
 
     /**
-     * 重新计算能放的位置（灰）
-     */
-    public void checkPlaceable(ChessPiece currentPlayer) {
-        gamePanel.checkPlaceable(currentPlayer);
-    }
-
-    /**
      * 跳过一回合
      * 连续两回合则结束游戏
      */
@@ -134,7 +127,7 @@ public class GameController {
         GameFrame.controller.resetScore();
         GameFrame.controller.getGamePanel().repaint();
         GameFrame.controller.getGamePanel().getUndoList().resetUndoList();
-        GameFrame.controller.getGamePanel().checkPlaceable(GameFrame.controller.getCurrentPlayer());
+        GameFrame.controller.getGamePanel().checkPlaceable(GameFrame.controller.getCurrentPlayer(),null);
         statusPanel.repaint();
     }
 }
