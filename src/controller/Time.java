@@ -14,12 +14,12 @@ public class Time implements Runnable {
     }
 
     @Override
-    public void run(){
+    public void run() {
         try {
-            while(true) {
+            while (true) {
                 time = System.currentTimeMillis();
                 Thread.sleep(16);
-                if(GameFrame.animation){
+                if (GameFrame.animation) {
                     GameFrame.controller.getGamePanel().repaint();
                 }
             }

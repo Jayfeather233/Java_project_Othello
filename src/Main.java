@@ -11,7 +11,7 @@ public class Main {
 
             GameFrame mainFrame = new GameFrame(800);
             mainFrame.setVisible(true);
-            mainFrame.setMinimumSize(new Dimension(450,200));
+            mainFrame.setMinimumSize(new Dimension(400, 550));
 
             mainFrame.addComponentListener(new ComponentAdapter() {//让窗口响应大小改变事件
 
@@ -19,7 +19,6 @@ public class Main {
                 public void componentResized(ComponentEvent e) {
                     mainFrame.resize();
                 }
-
             });
         });
     }

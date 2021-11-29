@@ -2,21 +2,20 @@ package view;
 
 
 import components.ChessGridComponent;
-import controller.*;
+import controller.AIThread;
+import controller.GameController;
+import controller.Time;
+import controller.TrainerThread;
 import model.ChessPiece;
-import model.Step;
 import model.UndoList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class GameFrame extends JFrame {
     public static GameController controller;

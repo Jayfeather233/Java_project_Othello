@@ -2,14 +2,16 @@ package controller;
 
 import model.ChessPiece;
 
-public class AIThread implements Runnable{
+public class AIThread implements Runnable {
 
     int lev;
     ChessPiece cur;
-    public AIThread(int level,ChessPiece cur){
-        this.lev=level;
-        this.cur=cur;
+
+    public AIThread(int level, ChessPiece cur) {
+        this.lev = level;
+        this.cur = cur;
     }
+
     @Override
     public void run() {
         try {
@@ -17,7 +19,7 @@ public class AIThread implements Runnable{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        AI.AIPlay(lev,cur);
+        AI.AIPlay(lev, cur);
     }
 }
 
