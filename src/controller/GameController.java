@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static view.GameFrame.setUndoEnabled;
+
 
 public class GameController {
     public static int whoWin = 0;//0:No 1:black 2:white 3:draw
@@ -133,6 +135,7 @@ public class GameController {
         GameFrame.controller.getGamePanel().repaint();
         GameFrame.controller.getGamePanel().getUndoList().resetUndoList();
         GameFrame.controller.getGamePanel().checkPlaceable(GameFrame.controller.getCurrentPlayer(), null);
+        setUndoEnabled(false);
         statusPanel.repaint();
     }
 }
