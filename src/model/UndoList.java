@@ -2,7 +2,9 @@ package model;
 
 import components.ChessGridComponent;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class UndoList {
     public ArrayList<Step> stepList;
@@ -38,7 +40,7 @@ public class UndoList {
         stepList.add(new Step(dx, dy, currentPlayer, tt));
         tmp[0] = tmp[1] = tmp[2] = tmp[3] =
                 tmp[4] = tmp[5] = tmp[6] = tmp[7] = 0;
-
+        //System.out.printf("%s",stepList.get(stepList.size()-1).toString());
     }
 
     public int undo(ChessGridComponent[][] chessGrids) {
@@ -82,5 +84,17 @@ public class UndoList {
 
     public boolean hasNext() {
         return stepList.size() != 0;
+    }
+
+    @Override
+    public String toString() {
+        int siz=stepList.size();
+        String s;
+        if(siz==0||stepList.get(stepList.size() - 1).color.getColor()==Color.WHITE)s="BLACK\r\n";else s="WHITE\r\n";
+        s = String.format("%s%d \r\n",s, stepList.size());
+        for (Step step : stepList) {
+            s = String.format("%s%s", s, step.toString());
+        }
+        return s;
     }
 }

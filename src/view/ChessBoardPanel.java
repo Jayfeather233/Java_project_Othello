@@ -333,4 +333,19 @@ public class ChessBoardPanel extends JPanel {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        ChessPiece cs;
+        String tostr = String.format("%d %d \r\n", CHESS_COUNT, CHESS_COUNT);
+        for (int i = 0; i < CHESS_COUNT; i++) {
+            for (int j = 0; j < CHESS_COUNT; j++) {
+                cs = chessGrids[i][j].getChessPiece();
+                if (cs == null) tostr = String.format("%s0 ", tostr);
+                else tostr = String.format("%s%s ", tostr, cs.toString());
+            }
+            tostr = String.format("%s\r\n", tostr);
+        }
+        return String.format("%s%s", tostr, undoList.toString());
+    }
 }

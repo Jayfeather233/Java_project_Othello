@@ -18,9 +18,9 @@ public class AI {
     public static int dx, dy;
 
     public static void setPanel(ChessBoardPanel panel) {
-        chessGrids = new ChessGridComponent[CHESS_COUNT][CHESS_COUNT];
-        for (int i = 0; i < CHESS_COUNT; i++) {
-            for (int j = 0; j < CHESS_COUNT; j++) {
+        chessGrids = new ChessGridComponent[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 chessGrids[i][j] = new ChessGridComponent(i, j);
             }
         }
@@ -51,24 +51,24 @@ public class AI {
      * 初始化棋盘权值和历史表
      */
     public static void initScore() {
-        panelScore = new int[CHESS_COUNT][CHESS_COUNT];
-        history = new Step[2][CHESS_COUNT*CHESS_COUNT*2][CHESS_COUNT*CHESS_COUNT];
-        for (int i = 0; i < CHESS_COUNT*CHESS_COUNT*2; i++) {
-            for (int j = 0; j < CHESS_COUNT*CHESS_COUNT; j++) {
-                history[0][i][j] = new Step(j / CHESS_COUNT, j % CHESS_COUNT, ChessPiece.BLACK, null);
-                history[1][i][j] = new Step(j / CHESS_COUNT, j % CHESS_COUNT, ChessPiece.BLACK, null);
+        panelScore = new int[9][9];
+        history = new Step[2][130][64];
+        for (int i = 0; i < 130; i++) {
+            for (int j = 0; j < 64; j++) {
+                history[0][i][j] = new Step(j / 8, j % 8, ChessPiece.BLACK, null);
+                history[1][i][j] = new Step(j / 8, j % 8, ChessPiece.BLACK, null);
             }
         }
 
-        for (int i = 0; i < CHESS_COUNT; i++) {
-            for (int j = 0; j < CHESS_COUNT; j++) {
-                if (i * (CHESS_COUNT - 1 - i) == 0 && j * (CHESS_COUNT - 1 - j) == 0)//在角
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (i * (7 - i) == 0 && j * (7 - j) == 0)//在角
                     panelScore[i][j] = 64;
-                else if ((i <= 1 || i >= CHESS_COUNT - 2) && (j <= 1 || j >= CHESS_COUNT - 2))//在角四周
+                else if ((i <= 1 || i >= 6) && (j <= 1 || j >= 6))//在角四周
                     panelScore[i][j] = 1;
-                else if ((i - 1) * (j - 1) * (CHESS_COUNT - 2 - i) * (CHESS_COUNT - 2 - j) == 0)//在第二行
+                else if ((i - 1) * (j - 1) * (6 - i) * (6 - j) == 0)//在第二行
                     panelScore[i][j] = 5;
-                else if (i * j * (CHESS_COUNT - 1 - i) * (CHESS_COUNT - 1 - j) == 0)//在边
+                else if (i * j * (7 - i) * (7 - j) == 0)//在边
                     panelScore[i][j] = 8;
                 else//在中间
                     panelScore[i][j] = 3;
@@ -83,8 +83,8 @@ public class AI {
     static int jp;
 
     public static void AIPlay(int level, ChessPiece currentPlayer) {
-        for (int i = 0; i < CHESS_COUNT; i++) {
-            for (int j = 0; j < CHESS_COUNT; j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 chessGrids[i][j].setChessPiece(panel.getChessGrids()[i][j].getChessPiece());
             }
         }
@@ -125,7 +125,7 @@ public class AI {
         int nn = currentPlayer == ChessPiece.BLACK ? 1 : 0, v;
         int nx = -1, ny = -1;
         ChessPiece nCur = currentPlayer == ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK;
-        for (int T = 0; T < CHESS_COUNT*CHESS_COUNT; T++) {
+        for (int T = 0; T < 64; T++) {
             Step s = history[nn][depth][T];
             int i = s.rowIndex, j = s.columnIndex;
             if (checkPlaceable(i, j, currentPlayer)) {

@@ -69,14 +69,19 @@ public class GameFrame extends JFrame {
         saveFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         loadFileMenuItem.addActionListener(e -> {
             System.out.println("clicked Load Btn");
-            String filePath = JOptionPane.showInputDialog(this, "input the path here");
-            if (controller.readFileData(filePath))
-                JOptionPane.showMessageDialog(this, "Cannot load the file!");
+            String filePath = JOptionPane.showInputDialog(this, "input the path here(need .txt)");
+            int error=controller.readFileData(filePath);
+            if (error>0)
+                JOptionPane.showMessageDialog(this, String.format("Cannot load the file! Error code:%d",error));
         });
         saveFileMenuItem.addActionListener(e -> {
             System.out.println("clicked Save Btn");
             String filePath = JOptionPane.showInputDialog(this, "input the path here");
-            controller.writeDataToFile(filePath);
+            try {
+                controller.writeDataToFile(filePath);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         });
 
         JMenuItem restartMenuItem = new JMenuItem("Restart");

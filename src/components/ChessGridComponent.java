@@ -149,8 +149,11 @@ public class ChessGridComponent extends BasicComponent {
                     int cx2 = (int) (cx * (u * 1.0 / lasT) + 0.5);
 
                     g.drawImage(GameFrame.getImage(this.chessPiece == ChessPiece.WHITE ? ChessPiece.BLACK : ChessPiece.WHITE),
-                            (gridSize - cx) / 2, (gridSize - cy) / 2, cx, cy, null);
-                    g.drawImage(bi, (gridSize - cx) / 2, (gridSize - cy) / 2, cx2, cy, null);
+                            (gridSize - cx) / 2, (gridSize - cy) / 2,
+                            cx, cy, null);
+                    g.drawImage(bi,
+                            (gridSize - cx) / 2, (gridSize - cy) / 2,
+                            cx2, cy, null);
 
                 } else {
 
@@ -159,20 +162,27 @@ public class ChessGridComponent extends BasicComponent {
                     int cy = (int) (chessSize + (lasT - u) * 30 / lasT);
 
                     BufferedImage bi = (BufferedImage) GameFrame.getImage(this.chessPiece == ChessPiece.WHITE ? ChessPiece.BLACK : ChessPiece.WHITE);
-                    if (u < lasT) bi = bi.getSubimage((int) (bi.getWidth() * (u * 1.0 / lasT) + 0.5), 0, (int) (bi.getWidth() * (1 - u * 1.0 / lasT) + 0.5), bi.getHeight());
+                    if (u < lasT) bi = bi.getSubimage((int) (bi.getWidth() * (u * 1.0 / lasT) + 0.5), 0,
+                            (int) (bi.getWidth() * (1 - u * 1.0 / lasT) + 0.5), bi.getHeight());
                     else bi = null;
 
                     int cx2 = (int) (cx * (1 - u * 1.0 / lasT) + 0.5);
 
-                    g.drawImage(GameFrame.getImage(this.chessPiece), (gridSize - cx) / 2, (gridSize - cy) / 2, cx, cy, null);
-                    g.drawImage(bi, (gridSize + cx) / 2 - cx2, (gridSize - cy) / 2, cx2, cy, null);
+                    g.drawImage(GameFrame.getImage(this.chessPiece),
+                            (gridSize - cx) / 2, (gridSize - cy) / 2,
+                            cx, cy, null);
+                    g.drawImage(bi,
+                            (gridSize + cx) / 2 - cx2, (gridSize - cy) / 2,
+                            cx2, cy, null);
                 }
             } else if (isFlip != 0 && GameFrame.animation) {
                 g.drawImage(GameFrame.getImage(this.chessPiece),
                         (int) (gridSize - chessSize - (lasT - u) * 15 / lasT) / 2, (int) (gridSize - chessSize - (lasT - u) * 15 / lasT) / 2,
                         (int) (chessSize + (lasT - u) * 15 / lasT), (int) (chessSize + (lasT - u) * 15 / lasT), null);
             } else {
-                g.drawImage(GameFrame.getImage(this.chessPiece), (gridSize - chessSize) / 2, (gridSize - chessSize) / 2, chessSize, chessSize, null);
+                g.drawImage(GameFrame.getImage(this.chessPiece),
+                        (gridSize - chessSize) / 2, (gridSize - chessSize) / 2,
+                        chessSize, chessSize, null);
             }
 
             if (col == lastCol && row == lastRow) {//最后一子突出显示
