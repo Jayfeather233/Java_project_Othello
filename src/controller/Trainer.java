@@ -47,9 +47,9 @@ public class Trainer {
                         }
                     }
                     switch (GameController.whoWin) {
-                        case 1 -> scoreS[i]++;
-                        case 2 -> scoreS[j]++;
-                        default -> {
+                        case 1 : scoreS[i]++;
+                        case 2 : scoreS[j]++;
+                        default : {
                         }
                     }
                     GameController.whoWin = 0;
