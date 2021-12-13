@@ -99,7 +99,6 @@ public class GameFrame extends JFrame {
         undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
 
         restartMenuItem.addActionListener(e -> {
-            System.out.println(e);
             chessBoardPanel.initialGame();
             controller.resetScore();
             controller.getGamePanel().repaint();
@@ -190,7 +189,7 @@ public class GameFrame extends JFrame {
         AIMenu.addSeparator();
 
         JCheckBoxMenuItem AIPlay = new JCheckBoxMenuItem("AI play itself");
-        //AIMenu.add(AIPlay);
+        AIMenu.add(AIPlay);
         AIPlay.addActionListener(e -> {
             if (AIPlay.getState()) {
                 Thread a = new Thread(new TrainerThread());

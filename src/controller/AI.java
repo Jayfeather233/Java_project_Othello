@@ -7,6 +7,11 @@ import model.UndoList;
 import view.ChessBoardPanel;
 import view.GameFrame;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Scanner;
+
 import static view.ChessBoardPanel.CHESS_COUNT;
 
 public class AI {
@@ -60,18 +65,32 @@ public class AI {
             }
         }
 
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (i * (7 - i) == 0 && j * (7 - j) == 0)//在角
-                    panelScore[i][j] = 64;
-                else if ((i <= 1 || i >= 6) && (j <= 1 || j >= 6))//在角四周
-                    panelScore[i][j] = 1;
-                else if ((i - 1) * (j - 1) * (6 - i) * (6 - j) == 0)//在第二行
-                    panelScore[i][j] = 5;
-                else if (i * j * (7 - i) * (7 - j) == 0)//在边
-                    panelScore[i][j] = 8;
-                else//在中间
-                    panelScore[i][j] = 3;
+        try {
+            FileReader fileReader = new FileReader("resource/Score1.txt");
+            BufferedReader in = new BufferedReader(fileReader);
+            Scanner S=new Scanner(in);
+
+            for(int ii=0;ii<8;ii++) {
+                for (int jj = 0; jj < 8; jj++) {
+                    panelScore[ii][jj]=S.nextInt();
+                }
+            }
+            in.close();
+            fileReader.close();
+        } catch (IOException e) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    if (i * (7 - i) == 0 && j * (7 - j) == 0)//在角
+                        panelScore[i][j] = 64;
+                    else if ((i <= 1 || i >= 6) && (j <= 1 || j >= 6))//在角四周
+                        panelScore[i][j] = 1;
+                    else if ((i - 1) * (j - 1) * (6 - i) * (6 - j) == 0)//在第二行
+                        panelScore[i][j] = 5;
+                    else if (i * j * (7 - i) * (7 - j) == 0)//在边
+                        panelScore[i][j] = 8;
+                    else//在中间
+                        panelScore[i][j] = 3;
+                }
             }
         }
     }
@@ -98,9 +117,9 @@ public class AI {
         }
         dx = dy = -1;
         jp = 0;
-        int tmp = -(50 < u
+        int tmp = -(48 < u
                 ? think(u, 84 - u, currentPlayer, false, false, currentPlayer, -INF, INF)
-                : think(u, level, currentPlayer, true, true, currentPlayer, -INF, INF));
+                : think(u, level, currentPlayer, true, false, currentPlayer, -INF, INF));
 
         ChessGridComponent.AIOn = false;
         //System.out.println("AIOn=false\n");
@@ -195,13 +214,13 @@ public class AI {
         }
         if (enableMove) {
             if (AIPiece == currentPlayer) {
-                dif += panel.countGray() * 5;
+                dif += panel.countGray() * 3;
                 panel.checkPlaceable(AIPiece == ChessPiece.BLACK ? ChessPiece.WHITE : ChessPiece.BLACK, chessGrids);
-                dif -= panel.countGray() * 5;
+                dif -= panel.countGray() * 3;
             } else {
-                dif -= panel.countGray() * 5;
+                dif -= panel.countGray() * 3;
                 panel.checkPlaceable(AIPiece, chessGrids);
-                dif += panel.countGray() * 5;
+                dif += panel.countGray() * 3;
             }
         }
         return dif * (AIPiece == currentPlayer ? 1 : -1);

@@ -2,6 +2,11 @@ package controller;
 
 import view.GameFrame;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Scanner;
+
 /**
  * AI自我对下来判断两个权值表谁更好
  * 正常运行时不应执行这些代码
@@ -9,72 +14,66 @@ import view.GameFrame;
 public class Trainer {
     public static boolean on = false;
 
-    public static void T() {
+    public static void T() throws InterruptedException, IOException {
         System.out.println("Self Playing...");
 
         on = true;
-        int[][][] score = new int[500][8][8];
-        int[][] scoreMove = new int[500][30];
-        int[] scoreS = new int[500];
+        int[][][] score = new int[2][8][8];
 
-        for (int T = 0; T < 500; T++) {
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    score[T][i][j] = (int) (Math.random() * 170) - 64;
-                    score[T][i][j] = Math.min(Math.max(score[T][i][j], -64), 64);
-                }
+        FileReader fileReader = new FileReader("resource/Score1.txt");
+        BufferedReader in = new BufferedReader(fileReader);
+        Scanner S=new Scanner(in);
+
+        for(int ii=0;ii<8;ii++) {
+            for (int jj = 0; jj < 8; jj++) {
+                score[0][ii][jj]=S.nextInt();
+                System.out.print(" "+score[0][ii][jj]);
             }
-            scoreS[T] = 0;
+            System.out.println("");
         }
 
-        int T = 0;
-        while (T < 500) {
+        S.close();
+        in.close();
+        fileReader.close();
 
-            for (int i = 0; i < 10; i++) {
-                for (int j = i + 1; j < 10; j++) {
-                    System.out.printf("Running %d %d...\n", i, j);
-                    boolean flg = true;
-                    while (GameController.whoWin == 0) {
-                        if (flg) AI.setPanelScore(score[i]);
-                        else AI.setPanelScore(score[j]);
-                        AI.AIPlay(8, GameFrame.controller.getCurrentPlayer());
-                        flg = !flg;
+        fileReader = new FileReader("resource/Score2.txt");
+        in = new BufferedReader(fileReader);
+        S=new Scanner(in);
 
-                        try {
-                            Thread.sleep(20);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    switch (GameController.whoWin) {
-                        case 1 : scoreS[i]++;
-                        case 2 : scoreS[j]++;
-                        default : {
-                        }
-                    }
-                    GameController.whoWin = 0;
-                }
+        for(int ii=0;ii<8;ii++) {
+            for (int jj = 0; jj < 8; jj++) {
+                score[1][ii][jj]=S.nextInt();
+                System.out.print(" "+score[1][ii][jj]);
             }
-
-            int maxn = 0, maxp = -1;
-            for (int i = 0; i < 50; i++) {
-                if (scoreS[i] > maxn) {
-                    maxn = scoreS[i];
-                    maxp = i;
-                }
-            }
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    System.out.printf("%d ", score[maxp][i][j]);
-                }
-                System.out.print('\n');
-            }
-
-            T++;
+            System.out.println("");
         }
 
+        in.close();
+        fileReader.close();
+
+        tr(score, true);
+        Thread.sleep(100);
+        tr(score, false);
+    }
+
+    private static void tr(int[][][] score, boolean flg) {
         while (GameController.whoWin == 0) {
-            AI.AIPlay(10, GameFrame.controller.getCurrentPlayer());
+            if (flg) AI.setPanelScore(score[1]);
+            else AI.setPanelScore(score[0]);
+            AI.AIPlay(8, GameFrame.controller.getCurrentPlayer());
+            flg = !flg;
+
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+        switch (GameController.whoWin) {
+            case 1 -> System.out.println("Black");
+            case 2 -> System.out.println("White");
+            default -> System.out.println("Draw");
+        }
+        GameController.whoWin=0;
     }
 }
