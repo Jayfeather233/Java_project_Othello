@@ -81,6 +81,11 @@ public class GameController {
         this.gamePanel = gamePanel;
     }
 
+    private static int getNextInt(Scanner u){
+        if(u.hasNextInt()) return u.nextInt();
+        return -17456321;
+    }
+
     public int readFileData(String fileName) {
         int size = fileName.length() - 1;
         if (size < 4) return 104;
@@ -91,23 +96,24 @@ public class GameController {
             FileReader fileReader = new FileReader(fileName);
             BufferedReader in = new BufferedReader(fileReader);
             Scanner S=new Scanner(in);
-            int n = S.nextInt(), m = S.nextInt();
+            int n = getNextInt(S), m = getNextInt(S);
             int[][] panel = new int[8][8];
             if (m == -1) return 106;
             if (n != 8 || m != 8) return 101;
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
-                    panel[i][j] = S.nextInt();
+                    panel[i][j] = getNextInt(S);
                     if (panel[i][j] < 0) return 106;
                     if (panel[i][j] > 2) return 102;
                     System.out.printf("%d ",panel[i][j]);
                 }
                 System.out.println("");
             }
+            if(!S.hasNext()) return 106;
             String nowPlayer=S.next();
             if(!nowPlayer.equals("WHITE")&&!nowPlayer.equals("BLACK"))
                 return 103;
-            n = S.nextInt();
+            n = getNextInt(S);
             if (n < 0) return 106;
             int[] x = new int[n], y = new int[n], color = new int[n], cheat = new int[n];
             int[][] pael = new int[8][8];
@@ -117,11 +123,12 @@ public class GameController {
             pael[3][4] = pael[4][3] = 2;
             pael[3][3] = pael[4][4] = 1;
             for (int i = 0; i < n; i++) {
-                x[i] = S.nextInt();
-                y[i] = S.nextInt();
-                color[i] = S.nextInt();
+                x[i] = getNextInt(S);
+                y[i] = getNextInt(S);
+                color[i] = getNextInt(S);
                 if (i == 0 && color[i] == 2) return 105;
-                cheat[i] = S.nextInt();
+                cheat[i] = getNextInt(S);
+                if(x[i]==-17456321||y[i]==-17456321) return 106;
                 if (x[i] > 7 || x[i] < 0 || y[i] > 7 || y[i] < 0)
                     return 105;
                 if( color[i] > 2 || color[i] < 0 || cheat[i] > 1 || cheat[i] < 0 )
@@ -181,7 +188,7 @@ public class GameController {
             }
             for (int xx = 0; xx < 8; xx++)
                 for (int yy = 0; yy < 8; yy++) if (pael[xx][yy] != panel[xx][yy]) return 105;
-            m = S.nextInt();
+            m = getNextInt(S);
             if (m > -1) return 106;
             gamePanel.initialGame();
             resetScore();
