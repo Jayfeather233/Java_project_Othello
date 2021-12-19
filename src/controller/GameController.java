@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 
 public class GameController {
@@ -80,26 +81,6 @@ public class GameController {
         this.gamePanel = gamePanel;
     }
 
-    String str = "";
-    private int cnt = 0;
-    private int siz=0;
-
-    private int R() {
-        int num = 0, k = 1;
-        if(cnt>=siz)return -1;
-        while (str.charAt(cnt) < '0' || str.charAt(cnt) > '9') {
-            if (str.charAt(cnt) == '-') k = -1;
-            cnt++;
-            if (cnt >= siz) return -1;
-        }
-        while (str.charAt(cnt) >= '0' && str.charAt(cnt) <= '9') {
-            num = num * 10 + str.charAt(cnt) - '0';
-            cnt++;
-            if (cnt >= siz) return -1;
-        }
-        return num * k;
-    }
-
     public int readFileData(String fileName) {
         int size = fileName.length() - 1;
         if (size < 4) return 104;
@@ -109,33 +90,25 @@ public class GameController {
         try {
             FileReader fileReader = new FileReader(fileName);
             BufferedReader in = new BufferedReader(fileReader);
-            String line;
-            str = "";
-            cnt = 0;
-            while ((line = in.readLine()) != null) {
-                str = str + line;
-            }
-            siz = str.length();
-            str = str + "  ";
-            int n = R(), m = R();
+            Scanner S=new Scanner(in);
+            int n = S.nextInt(), m = S.nextInt();
             int[][] panel = new int[8][8];
             if (m == -1) return 106;
             if (n != 8 || m != 8) return 101;
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
-                    panel[i][j] = R();
-                    if (panel[i][j] == -1) return 106;
+                    panel[i][j] = S.nextInt();
+                    if (panel[i][j] < 0) return 106;
                     if (panel[i][j] > 2) return 102;
+                    System.out.printf("%d ",panel[i][j]);
                 }
-            while (str.charAt(cnt) < 'A' || str.charAt(cnt) > 'Z') {
-                cnt++;
-                if (cnt >= siz) return 106;
+                System.out.println("");
             }
-            if ((str.charAt(cnt) != 'B' || str.charAt(cnt + 1) != 'L' || str.charAt(cnt + 2) != 'A' || str.charAt(cnt + 3) != 'C' || str.charAt(cnt + 4) != 'K') &&
-                    (str.charAt(cnt) != 'W' || str.charAt(cnt + 1) != 'H' || str.charAt(cnt + 2) != 'I' || str.charAt(cnt + 3) != 'T' || str.charAt(cnt + 4) != 'E'))
+            String nowPlayer=S.next();
+            if(!nowPlayer.equals("WHITE")&&!nowPlayer.equals("BLACK"))
                 return 103;
-            n = R();
-            if (n == -1) return 106;
+            n = S.nextInt();
+            if (n < 0) return 106;
             int[] x = new int[n], y = new int[n], color = new int[n], cheat = new int[n];
             int[][] pael = new int[8][8];
             int[] dirx = new int[]{1, 1, 1, 0, -1, -1, -1, 0};
@@ -144,12 +117,14 @@ public class GameController {
             pael[3][4] = pael[4][3] = 2;
             pael[3][3] = pael[4][4] = 1;
             for (int i = 0; i < n; i++) {
-                x[i] = R();
-                y[i] = R();
-                color[i] = R();
+                x[i] = S.nextInt();
+                y[i] = S.nextInt();
+                color[i] = S.nextInt();
                 if (i == 0 && color[i] == 2) return 105;
-                cheat[i] = R();
-                if (x[i] > 7 || x[i] < 0 || y[i] > 7 || y[i] < 0 || color[i] > 2 || color[i] < 0 || cheat[i] > 1 || cheat[i] < 0)
+                cheat[i] = S.nextInt();
+                if (x[i] > 7 || x[i] < 0 || y[i] > 7 || y[i] < 0)
+                    return 105;
+                if( color[i] > 2 || color[i] < 0 || cheat[i] > 1 || cheat[i] < 0 )
                     return 106;
                 if (pael[x[i]][y[i]] > 0) return 105;
                 int suc = 0;
@@ -170,7 +145,6 @@ public class GameController {
                                 if (cntnow == 1) {
                                     xnow = x[i] + dirx[dir];
                                     ynow = y[i] + diry[dir];
-                                    cntnow = 0;
                                     while (pael[xnow][ynow] == 3 - color[i]) {
                                         suc = 1;
                                         xnow += dirx[dir];
@@ -194,7 +168,6 @@ public class GameController {
                     if (cntnow == 1) {
                         xnow = x[i] + dirx[dir];
                         ynow = y[i] + diry[dir];
-                        cntnow = 0;
                         while (pael[xnow][ynow] == 3 - color[i]) {
                             suc = 1;
                             pael[xnow][ynow] = color[i];
@@ -208,7 +181,7 @@ public class GameController {
             }
             for (int xx = 0; xx < 8; xx++)
                 for (int yy = 0; yy < 8; yy++) if (pael[xx][yy] != panel[xx][yy]) return 105;
-            m = R();
+            m = S.nextInt();
             if (m > -1) return 106;
             gamePanel.initialGame();
             resetScore();

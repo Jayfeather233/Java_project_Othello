@@ -15,6 +15,7 @@ public class ChessGridComponent extends BasicComponent {
     public static int chessSize;
     public static int gridSize;
     public static boolean AIOn;
+    public static boolean netOn=false;
 
     private static int lastRow = -1, lastCol = -1;
 
@@ -43,7 +44,7 @@ public class ChessGridComponent extends BasicComponent {
     @Override
     public void onMouseClicked() {
         //System.out.printf("%s clicked (%d, %d)", GameFrame.controller.getCurrentPlayer(), row, col);
-        if (GameFrame.controller.canClick(row, col) && !AIOn) {
+        if (GameFrame.controller.canClick(row, col) && !AIOn && !(netOn && GameFrame.controller.getCurrentPlayer()==GameFrame.AIPiece)) {
             if (this.chessPiece == null || this.chessPiece == ChessPiece.GRAY) {//合法落子
                 lastCol = col;
                 lastRow = row;
@@ -63,6 +64,8 @@ public class ChessGridComponent extends BasicComponent {
 
                 controller.swapPlayer();
                 panel.repaint();//重绘
+
+                if(netOn) GameFrame.send("P "+col+row);
 
 
                 if (panel.checkGray()) {//没有灰色，跳过落子

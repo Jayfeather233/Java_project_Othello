@@ -4,17 +4,6 @@ This is my project in CS107-F21.
 
 This repository is currently private.
 
-### Task 2: Load and Save a Game (20 pts)
-* Your program should be able to load an existing game from a text file with a predefined format by clicking buttons. After loading, all disks should be placed at
-their positions given in the text file. The save file includes at least the current
-chessboard, the previous moves, and the current side to play (dark or light).
-
-* Your program should be able to perform error check, e.g., there is no winner yet,
-any move is invalid, etc.
-
-* Your program should be able to save the current game into a text file.
-
-
 ### Bonus (20/30 pts):
 If your program satisfies all the above basic requirements, you will get 80 points. The
 remaining 20/30 points will be given as bonus. You are highly encouraged to go

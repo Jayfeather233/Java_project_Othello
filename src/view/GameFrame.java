@@ -1,13 +1,10 @@
 package view;
 
 
-import components.ChessGridComponent;
-import controller.AIThread;
-import controller.GameController;
-import controller.Time;
-import controller.TrainerThread;
-import model.ChessPiece;
-import model.UndoList;
+import LocalNet.*;
+import components.*;
+import controller.*;
+import model.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,8 +13,13 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Objects;
 
 public class GameFrame extends JFrame {
+    private static GameFrame th;
+    public static final int PORT=9089;
     public static GameController controller;
     public static boolean animation = true;
     private ChessBoardPanel chessBoardPanel;
@@ -28,6 +30,8 @@ public class GameFrame extends JFrame {
     public static int AI_Level = 1;
     private static Image blackChess, whiteChess, grayChess, panelImage, panelBackGroundImage;
     private static JMenuItem undoMenuItem;
+
+    private static NetSender sender;
 
     /**
      * 获取对应图片
@@ -41,13 +45,68 @@ public class GameFrame extends JFrame {
     public GameFrame(int frameSize) {
         this.setTitle("2021F CS102A Project Reversi");
         this.setLayout(null);
+        th=this;
+        new NetReceiver(PORT);
 
+        //获取窗口边框的长度，将这些值加到主窗口大小上，这能使窗口大小和预期相符
+        Insets inset = this.getInsets();
+        this.setSize(frameSize + inset.left + inset.right, frameSize + inset.top + inset.bottom);
+
+
+        this.setLocationRelativeTo(null);
+
+        try {
+            blackChess = ImageIO.read(new File("resource\\black.png"));
+            whiteChess = ImageIO.read(new File("resource\\white.png"));
+            grayChess = ImageIO.read(new File("resource\\gray.png"));
+            panelImage = ImageIO.read(new File("resource\\panel.png"));
+            panelBackGroundImage = ImageIO.read(new File("resource\\background.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        chessBoardPanel = new ChessBoardPanel((int) (this.getWidth() * 0.75), (int) (this.getHeight() * 0.75));
+        backGroundPanel = new BackGroundPanel();
+        statusPanel = new StatusPanel((int) (this.getWidth() * 0.7), (int) (this.getHeight() * 0.1));
+
+        controller = new GameController(chessBoardPanel, statusPanel);
+        controller.setGamePanel(chessBoardPanel);
+        chessBoardPanel.checkPlaceable(controller.getCurrentPlayer(), null);
+
+        this.setJMenuBar(initialMenuBar());
+        this.add(chessBoardPanel);
+        this.add(backGroundPanel);
+        this.add(statusPanel);
+
+
+        this.getContentPane().setBackground(new Color(17, 17, 17));
+        statusPanel.setBackground(new Color(30, 30, 30));
+        this.setVisible(true);
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        new Thread(new Time()).start();
+    }
+
+    public static void playWith(String substring) {
+        //sender=new NetSender(substring,PORT);
+        th.doRestart();
+        ChessGridComponent.netOn=true;
+        AIPiece=ChessPiece.BLACK;
+    }
+
+    public static void send(String s) {
+        //sender.send(s);
+    }
+
+    private JMenuBar initialMenuBar() {
 
         //创建菜单栏MenuBar，至211行
         JMenuBar menuBar = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
         JMenu gameMenu = new JMenu("Game");
+        JMenu localMenu = new JMenu("Local-net");
         JMenu AIMenu = new JMenu("vsAI");
         JMenu panelMenu = new JMenu("Panel");
 
@@ -58,6 +117,7 @@ public class GameFrame extends JFrame {
 
         menuBar.add(fileMenu);
         menuBar.add(gameMenu);
+        menuBar.add(localMenu);
         menuBar.add(AIMenu);
         menuBar.add(panelMenu);
 
@@ -98,15 +158,7 @@ public class GameFrame extends JFrame {
         restartMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
         undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
 
-        restartMenuItem.addActionListener(e -> {
-            chessBoardPanel.initialGame();
-            controller.resetScore();
-            controller.getGamePanel().repaint();
-            controller.getGamePanel().getUndoList().resetUndoList();
-            chessBoardPanel.checkPlaceable(controller.getCurrentPlayer(), null);
-            setUndoEnabled(false);
-            statusPanel.repaint();
-        });
+        restartMenuItem.addActionListener(e->doRestart());
         setUndoEnabled(false);
         undoMenuItem.addActionListener(e -> {
             GameFrame.controller.getGamePanel().doUndo();
@@ -150,6 +202,59 @@ public class GameFrame extends JFrame {
             }
         });
         AICheatMode.addActionListener(e -> AICheat = !AICheat);
+
+        JMenuItem startListen = new JMenuItem("Play with...");
+        localMenu.add(startListen);
+        startListen.addActionListener(e->{
+            String ip=null;
+            boolean flg;
+            do {
+                flg=false;
+                int[] targetIP=new int[4];
+                String[] ips=null;
+                do {
+                    if (ips != null) JOptionPane.showMessageDialog(this, "Error! Invalid IP address.");
+                    try {
+                        ip = JOptionPane.showInputDialog("Your IP is " + InetAddress.getLocalHost().getHostAddress() + "\nInput the IP here:");
+                    } catch (UnknownHostException ex) {
+                        ex.printStackTrace();
+                    }
+                    if (ip != null) ips = ip.split("\\.");
+
+                } while (ip!=null && Objects.requireNonNull(ips).length != 4 );
+                if(ip==null) break;
+                for (String s : ips) {
+                    if(checkIsNumber(s)){
+                        flg=true;
+                        break;
+                    }
+                }
+                if(!flg) {
+                    for(int i=0;i<ips.length;i++){
+                        targetIP[i]=Integer.parseInt(ips[i]);
+                        if(targetIP[i]>255||targetIP[i]<0){
+                            flg=true;
+                            break;
+                        }
+                    }
+                }
+            }while(flg);
+
+            if(ip!=null){
+                sender=new NetSender(ip,PORT);
+                try {
+                    sender.send("N"+InetAddress.getLocalHost().getHostAddress());
+                    doRestart();
+                    ChessGridComponent.netOn=true;
+                    AIPiece=ChessPiece.WHITE;
+                } catch (UnknownHostException ex) {
+                    JOptionPane.showMessageDialog(this,ex.getMessage());
+                }
+            }else{
+                JOptionPane.showMessageDialog(this,"Canceled.");
+            }
+        });
+
 
         JCheckBoxMenuItem AIMode = new JCheckBoxMenuItem("AI mode");
         AIMenu.add(AIMode);
@@ -212,46 +317,16 @@ public class GameFrame extends JFrame {
         panelColor.addActionListener(e -> statusPanel.setBackground(JColorChooser.showDialog(this, "Choose status panel color", Color.lightGray)));
 
         //菜单栏到此结束
+        return menuBar;
+    }
 
-
-        //获取窗口边框的长度，将这些值加到主窗口大小上，这能使窗口大小和预期相符
-        Insets inset = this.getInsets();
-        this.setSize(frameSize + inset.left + inset.right, frameSize + inset.top + inset.bottom);
-
-
-        this.setLocationRelativeTo(null);
-
-        try {
-            blackChess = ImageIO.read(new File("resource\\black.png"));
-            whiteChess = ImageIO.read(new File("resource\\white.png"));
-            grayChess = ImageIO.read(new File("resource\\gray.png"));
-            panelImage = ImageIO.read(new File("resource\\panel.png"));
-            panelBackGroundImage = ImageIO.read(new File("resource\\background.png"));
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static boolean checkIsNumber(String a){
+        for(int i=0;i<a.length();i++) {
+            if (a.charAt(i) > '9' || a.charAt(i) < '0') {
+                return true;
+            }
         }
-
-
-        chessBoardPanel = new ChessBoardPanel((int) (this.getWidth() * 0.75), (int) (this.getHeight() * 0.75));
-        backGroundPanel = new BackGroundPanel();
-        statusPanel = new StatusPanel((int) (this.getWidth() * 0.7), (int) (this.getHeight() * 0.1));
-
-        controller = new GameController(chessBoardPanel, statusPanel);
-        controller.setGamePanel(chessBoardPanel);
-        chessBoardPanel.checkPlaceable(controller.getCurrentPlayer(), null);
-
-        this.setJMenuBar(menuBar);
-        this.add(chessBoardPanel);
-        this.add(backGroundPanel);
-        this.add(statusPanel);
-
-
-        this.getContentPane().setBackground(new Color(17, 17, 17));
-        statusPanel.setBackground(new Color(30, 30, 30));
-        this.setVisible(true);
-        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        new Thread(new Time()).start();
+        return false;
     }
 
     public static void setUndoEnabled(boolean u) {
@@ -283,5 +358,15 @@ public class GameFrame extends JFrame {
 
         backGroundPanel.reSize(M, M);
         backGroundPanel.setLocation((W - backGroundPanel.getWidth()) / 2, 0);
+    }
+
+    public void doRestart(){
+        chessBoardPanel.initialGame();
+        controller.resetScore();
+        controller.getGamePanel().repaint();
+        controller.getGamePanel().getUndoList().resetUndoList();
+        chessBoardPanel.checkPlaceable(controller.getCurrentPlayer(), null);
+        setUndoEnabled(false);
+        statusPanel.repaint();
     }
 }
