@@ -200,7 +200,6 @@ public class GameController {
             gamePanel.checkPlaceable(currentPlayer, null);
             for (int i = 0; i < n; i++) gamePanel.getChessGrids()[x[i]][y[i]].onMouseClicked();
             GameFrame.cheat=cheatnow;
-            JOptionPane.showMessageDialog(null, "Loaded successfully", "Hint", JOptionPane.PLAIN_MESSAGE);
             return 0;
         } catch (IOException e) {
             e.printStackTrace();
