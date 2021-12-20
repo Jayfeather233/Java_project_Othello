@@ -94,4 +94,9 @@ class Receiver implements Runnable{
         }
         return true;
     }
+
+    public static void main(String[] args) {
+        Receiver r=new Receiver(9089);
+        r.run();
+    }
 }

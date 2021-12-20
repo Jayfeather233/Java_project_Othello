@@ -2,9 +2,7 @@ package LocalNet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class NetSender {
     Socket sock;
@@ -23,6 +21,6 @@ public class NetSender {
     }
 
     public static void main(String[] args) {
-        new NetSender("127.0.0.1",9089).send("P 2 4");
+        new NetSender("10.15.46.112",9089).send("P 2 4");
     }
 }

@@ -65,7 +65,7 @@ public class ChessGridComponent extends BasicComponent {
                 controller.swapPlayer();
                 panel.repaint();//重绘
 
-                if(netOn) GameFrame.send("P "+col+row);
+                if(netOn) GameFrame.send("P "+col+' '+row);
 
 
                 if (panel.checkGray()) {//没有灰色，跳过落子
