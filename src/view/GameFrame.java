@@ -89,14 +89,14 @@ public class GameFrame extends JFrame {
     }
 
     public static void playWith(String substring) {
-        //sender=new NetSender(substring,PORT);
+        sender=new NetSender(substring,PORT);
         th.doRestart();
         ChessGridComponent.netOn=true;
         AIPiece=ChessPiece.BLACK;
     }
 
     public static void send(String s) {
-        //sender.send(s);
+        sender.send(s);
     }
 
     private JMenuBar initialMenuBar() {

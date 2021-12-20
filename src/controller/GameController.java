@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static components.ChessGridComponent.netOn;
+
 
 public class GameController {
     public static int whoWin = 0;//0:No 1:black 2:white 3:draw
@@ -260,5 +262,7 @@ public class GameController {
         GameFrame.controller.getGamePanel().getUndoList().resetUndoList();
         GameFrame.controller.getGamePanel().checkPlaceable(GameFrame.controller.getCurrentPlayer(), null);
         statusPanel.repaint();
+
+        netOn=false;
     }
 }

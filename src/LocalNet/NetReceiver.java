@@ -1,5 +1,6 @@
 package LocalNet;
 
+import components.ChessGridComponent;
 import view.GameFrame;
 
 import java.io.BufferedReader;
@@ -56,7 +57,9 @@ class Receiver implements Runnable{
                     if(checkReceivedPlay(str)){
                         String[] u=str.split(" ");
                         int col=Integer.parseInt(u[1]),row=Integer.parseInt(u[2]);
-                        GameFrame.controller.getGamePanel().getChessGrids()[col][row].onMouseClicked();
+                        ChessGridComponent.netOn=false;
+                        GameFrame.controller.getGamePanel().getChessGrids()[row][col].onMouseClicked();
+                        ChessGridComponent.netOn=true;
                         System.out.println(str);
                     }else{
                         System.out.println("Invalid play.");
