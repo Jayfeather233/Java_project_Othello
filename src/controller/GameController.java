@@ -254,13 +254,13 @@ public class GameController {
             JOptionPane.showMessageDialog(gamePanel, (blackScore != whiteScore) ? ((blackScore > whiteScore ? "BLACK" : "WHITE") + " WINS!") : "DRAW!");
 
         whoWin = (blackScore != whiteScore) ? ((blackScore > whiteScore ? 1 : 2)) : 3;
-
+/*
         GameFrame.controller.getGamePanel().initialGame();
         GameFrame.controller.resetScore();
         GameFrame.controller.getGamePanel().repaint();
         GameFrame.controller.getGamePanel().getUndoList().resetUndoList();
         GameFrame.controller.getGamePanel().checkPlaceable(GameFrame.controller.getCurrentPlayer(), null);
-        statusPanel.repaint();
+        statusPanel.repaint();*/
 
         netOn=false;
     }
