@@ -2,7 +2,7 @@
 
 This is my project in CS107-F21.
 
-This repository is currently private.
+This repository is currently public.
 
 ### Bonus (20/30 pts):
 If your program satisfies all the above basic requirements, you will get 80 points. The
